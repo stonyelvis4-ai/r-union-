@@ -1,20 +1,5 @@
-/** Backend entry point */
-import express from 'express';
-import cors from 'cors';
-import { apiRouter } from './api/index.js';
-import { errorHandler } from './api/errorHandler.js';
-
-const app = express();
-app.use(cors({ origin: process.env.FRONTEND_URL ?? '*' }));
-app.use(express.json());
-
-app.use('/api', apiRouter);
-
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' });
-});
-
-app.use(errorHandler);
+/** Backend entry point for local development. */
+import app from './app.js';
 
 const PORT = Number(process.env.PORT) || 4000;
 const HOST = process.env.HOST || '0.0.0.0';
