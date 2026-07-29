@@ -137,7 +137,9 @@ authRouter.post('/google', async (req: Request, res: Response, next: NextFunctio
 
     const user = await prisma.user.upsert({
       where: { email: googleUser.email },
-      update: {},
+      // L'inscription Google peut aussi servir à faire évoluer un compte existant
+      // vers le rôle public choisi sur le formulaire.
+      update: role === 'ADMIN' ? { role: 'ADMIN' } : {},
       create: {
         email: googleUser.email,
         name: googleUser.user_metadata?.full_name ?? googleUser.user_metadata?.name,
