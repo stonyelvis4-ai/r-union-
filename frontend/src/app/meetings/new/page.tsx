@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getApiBase } from '@/services/api';
@@ -15,6 +15,23 @@ export default function NewMeetingPage() {
   const [emails, setEmails] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [accessChecked, setAccessChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.replace('/login');
+      return;
+    }
+    fetch(`${getApiBase()}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((user) => {
+        setIsAdmin(user?.role === 'ADMIN');
+        setAccessChecked(true);
+      })
+      .catch(() => setAccessChecked(true));
+  }, [router]);
 
   const participantEmails = emails
     .split(/[\s,;]+/)
@@ -61,6 +78,18 @@ export default function NewMeetingPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (!accessChecked) return null;
+  if (!isAdmin) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-slate-50">
+        <div className="max-w-md rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-center">
+          <h1 className="text-lg font-semibold">Création réservée aux administrateurs</h1>
+          <Link href="/meetings" className="mt-5 inline-flex rounded-xl bg-cyan-300 px-4 py-2 font-semibold text-slate-950">Voir mes réunions</Link>
+        </div>
+      </main>
+    );
   }
 
   return (

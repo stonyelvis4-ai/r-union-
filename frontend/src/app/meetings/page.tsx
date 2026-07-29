@@ -21,13 +21,21 @@ export default function MeetingsPage() {
   const [useSearch, setUseSearch] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const base = getApiBase();
 
   useEffect(() => {
     setMounted(true);
     if (typeof window !== 'undefined') {
-      setToken(localStorage.getItem('token'));
+      const storedToken = localStorage.getItem('token');
+      setToken(storedToken);
+      if (storedToken) {
+        fetch(`${base}/auth/me`, { headers: { Authorization: `Bearer ${storedToken}` } })
+          .then((res) => (res.ok ? res.json() : null))
+          .then((user) => setIsAdmin(user?.role === 'ADMIN'))
+          .catch(() => undefined);
+      }
     }
   }, []);
 
@@ -96,7 +104,7 @@ export default function MeetingsPage() {
               Visualisez, filtrez et créez vos réunions en temps réel.
             </p>
           </div>
-          <div>
+          {isAdmin && <div>
             <Link
               href="/meetings/new"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200 md:w-auto md:py-2.5"
@@ -104,10 +112,10 @@ export default function MeetingsPage() {
               <span aria-hidden className="text-[13px]">➕</span>
               Nouvelle réunion
             </Link>
-          </div>
+          </div>}
         </header>
 
-        {token && (
+        {token && isAdmin && (
         <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.035] p-1.5 backdrop-blur-xl">
           <SearchFilters
             value={filters}
