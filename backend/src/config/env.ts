@@ -13,6 +13,8 @@ const envSchema = z.object({
   SMTP_FROM: z.string().optional(),
   SUPABASE_URL: z.string().url().optional(),
   SUPABASE_ANON_KEY: z.string().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  SUPABASE_STORAGE_BUCKET: z.string().default('recordings'),
 });
 
 export type Env = z.infer<typeof envSchema>;

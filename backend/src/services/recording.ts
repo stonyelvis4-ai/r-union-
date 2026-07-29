@@ -56,7 +56,7 @@ export async function stopRecording(
   const { key, url } = await storage.uploadBuffer(audioBuffer, meetingId);
   await prisma.audioRecording.update({
     where: { id: cur.recordingId },
-    data: { storageKey: key, storageUrl: url, status: 'ready', durationSeconds: durationSeconds ?? null },
+    data: { storageKey: key, storageUrl: url || null, status: 'ready', durationSeconds: durationSeconds ?? null },
   });
   stateByMeeting.delete(meetingId);
   const updated = await prisma.audioRecording.findUnique({ where: { id: cur.recordingId } });

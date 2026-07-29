@@ -51,14 +51,12 @@ async function callSpeechToText(storageKey: string): Promise<string> {
     console.warn('[Transcription] OPENAI_API_KEY non configurée — transcription désactivée.');
     return '';
   }
-  const { getFileStream } = await import('./storage.js');
-  const file = await getFileStream(storageKey);
-  if (!file) {
+  const { getFileBuffer } = await import('./storage.js');
+  const buffer = await getFileBuffer(storageKey);
+  if (!buffer) {
     console.error('[Transcription] Fichier audio introuvable:', storageKey);
     return '[Fichier audio introuvable.]';
   }
-  const fs = await import('fs/promises');
-  const buffer = await fs.readFile(file.path);
   const formData = new FormData();
   const blob = new Blob([buffer], { type: 'audio/webm' });
   formData.append('file', blob, 'audio.webm');
