@@ -90,6 +90,7 @@ recordingRouter.get(
   '/meetings/:id/recording',
   authMiddleware(),
   requireAuth,
+  requireOrganizer,
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const meeting = await meetingService.getMeetingById(req.params.id);
@@ -115,6 +116,7 @@ transcriptionRouter.get(
   '/meetings/:id/transcription',
   authMiddleware(),
   requireAuth,
+  requireOrganizer,
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const meeting = await meetingService.getMeetingById(req.params.id);

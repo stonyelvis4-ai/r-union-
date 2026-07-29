@@ -75,6 +75,10 @@ const joinByQrSchema = z.object({
   qrToken: z.string().min(20).max(200),
 });
 
+const publicQrQuerySchema = z.object({
+  qrToken: z.string().min(20).max(200),
+});
+
 meetingsRouter.get(
   '/',
   authMiddleware(),
@@ -178,34 +182,18 @@ meetingsRouter.get(
   '/:id/public',
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      const meeting = await meetingService.getMeetingPublic(req.params.id);
-      if (!meeting) {
+      const { qrToken } = publicQrQuerySchema.parse(req.query);
+      const meeting = await meetingService.getMeetingByQrToken(qrToken);
+      if (!meeting || meeting.id !== req.params.id || meeting.status === 'CANCELLED') {
         res.status(404).json({ error: 'Not Found' });
         return;
       }
-      res.json(meeting);
+      res.json({ id: meeting.id, title: meeting.title, date: meeting.date, time: meeting.time });
     } catch (e) {
       next(e);
     }
   }
 );
-
-meetingsRouter.get('/:id/qr', async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const { id } = req.params;
-    const qrToken = req.query.qrToken as string | undefined;
-    const meeting = qrToken
-      ? await meetingService.getMeetingByQrToken(qrToken)
-      : await meetingService.getMeetingById(id);
-    if (!meeting) {
-      res.status(404).json({ error: 'Not Found' });
-      return;
-    }
-    res.json({ qrToken: meeting.qrToken, meetingId: meeting.id });
-  } catch (e) {
-    next(e);
-  }
-});
 
 meetingsRouter.get(
   '/:id/attendance',

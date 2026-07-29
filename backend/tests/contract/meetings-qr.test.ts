@@ -20,7 +20,7 @@ describe('Meetings QR API contract', () => {
       .send({
         email: 'qr-organizer@test.com',
         password: 'password123',
-        role: 'ORGANIZER',
+        role: 'ADMIN',
       });
     token = register.status === 201 ? register.body.token : (await request(app).post('/api/auth/login').send({ email: 'qr-organizer@test.com', password: 'password123' })).body.token;
     const create = await request(app)
@@ -31,16 +31,15 @@ describe('Meetings QR API contract', () => {
     qrToken = create.body.qrToken;
   });
 
-  it('GET /api/meetings/:id/qr returns qrToken and meetingId', async () => {
+  it('does not disclose a QR token from a meeting id', async () => {
     const res = await request(app).get(`/api/meetings/${meetingId}/qr`);
-    expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('qrToken', qrToken);
-    expect(res.body).toHaveProperty('meetingId', meetingId);
+    expect(res.status).toBe(404);
   });
 
-  it('GET /api/meetings/:id/qr?qrToken=... works without auth', async () => {
-    const res = await request(app).get(`/api/meetings/${meetingId}/qr?qrToken=${qrToken}`);
+  it('GET /api/meetings/:id/public requires the QR token', async () => {
+    const res = await request(app).get(`/api/meetings/${meetingId}/public?qrToken=${qrToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.qrToken).toBe(qrToken);
+    expect(res.body).not.toHaveProperty('qrToken');
+    expect(res.body.id).toBe(meetingId);
   });
 });

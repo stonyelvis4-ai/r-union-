@@ -20,7 +20,7 @@ describe('Attendance API contract', () => {
       .send({
         email: 'att-organizer@test.com',
         password: 'password123',
-        role: 'ORGANIZER',
+        role: 'ADMIN',
       });
     token = register.status === 201 ? register.body.token : (await request(app).post('/api/auth/login').send({ email: 'att-organizer@test.com', password: 'password123' })).body.token;
     const create = await request(app)
@@ -39,6 +39,13 @@ describe('Attendance API contract', () => {
     expect(res.body.success).toBe(true);
     expect(res.body).toHaveProperty('attendance');
     expect(res.body.attendance).toHaveProperty('meetingId', meetingId);
+  });
+
+  it('POST /api/attendance/scan rejects a meeting id without its QR token', async () => {
+    const res = await request(app)
+      .post('/api/attendance/scan')
+      .send({ meetingId });
+    expect(res.status).toBe(400);
   });
 
   it('POST /api/attendance/scan with auth associates userId', async () => {

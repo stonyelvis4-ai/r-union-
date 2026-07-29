@@ -19,7 +19,7 @@ describe('Meetings API contract', () => {
         email: 'organizer@test.com',
         password: 'password123',
         name: 'Organizer',
-        role: 'ORGANIZER',
+        role: 'ADMIN',
       });
     if (register.status === 201) {
       token = register.body.token;

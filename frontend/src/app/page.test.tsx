@@ -1,23 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import Home from '@/app/page';
 
-describe('Page d\'accueil', () => {
-  it('affiche le titre SmartReunion', () => {
+describe('Home page', () => {
+  it('renders the main heading', () => {
     render(<Home />);
-    expect(screen.getByRole('heading', { name: /SmartReunion/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Faites de chaque/i })).toBeInTheDocument();
   });
 
-  it('affiche le lien Connexion', () => {
+  it('renders the login link', () => {
     render(<Home />);
-    const link = screen.getByRole('link', { name: /Connexion/i });
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', '/login');
+    expect(screen.getByRole('link', { name: /Se connecter/i })).toHaveAttribute('href', '/login');
   });
 
-  it('affiche les liens Réunions et Admin', () => {
+  it('renders the signup link', () => {
     render(<Home />);
-    expect(screen.getByRole('link', { name: /Réunions/i })).toHaveAttribute('href', '/meetings');
-    expect(screen.getByRole('link', { name: /Admin/i })).toHaveAttribute('href', '/admin/users');
+    expect(screen.getByRole('link', { name: /compte/i })).toHaveAttribute('href', '/register');
   });
 });

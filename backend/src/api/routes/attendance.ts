@@ -8,16 +8,14 @@ import * as attendanceService from '../../services/attendance.js';
 import * as meetingService from '../../services/meeting.js';
 
 const scanSchema = z.object({
-  meetingId: z.string().cuid().optional(),
-  qrToken: z.string().optional(),
+  qrToken: z.string().min(20).max(200),
   attendeeName: z.string().max(200).optional(),
   attendeeEmail: z.string().email().optional(),
-}).refine((d) => d.meetingId || d.qrToken, { message: 'meetingId or qrToken required' });
+});
 
 const syncSchema = z.object({
   items: z.array(z.object({
-    meetingId: z.string().cuid().optional(),
-    qrToken: z.string().optional(),
+    qrToken: z.string().min(20).max(200),
     scannedAt: z.string().optional(),
   })),
 });
@@ -31,7 +29,6 @@ attendanceRouter.post(
     try {
       const body = scanSchema.parse(req.body);
       const result = await attendanceService.recordScan({
-        meetingId: body.meetingId,
         qrToken: body.qrToken,
         userId: req.user?.sub,
         attendeeName: body.attendeeName,
@@ -66,7 +63,6 @@ attendanceRouter.post(
       const results: { success: boolean; alreadyRecorded?: boolean; error?: string }[] = [];
       for (const item of body.items) {
         const result = await attendanceService.recordScan({
-          meetingId: item.meetingId,
           qrToken: item.qrToken,
           userId: req.user!.sub,
           attendeeName: undefined,

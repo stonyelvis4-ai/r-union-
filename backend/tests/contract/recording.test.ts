@@ -16,7 +16,7 @@ describe('Recording & Transcription API contract', () => {
   beforeAll(async () => {
     const register = await request(app)
       .post('/api/auth/register')
-      .send({ email: 'rec-organizer@test.com', password: 'password123', role: 'ORGANIZER' });
+      .send({ email: 'rec-organizer@test.com', password: 'password123', role: 'ADMIN' });
     token = register.status === 201 ? register.body.token : (await request(app).post('/api/auth/login').send({ email: 'rec-organizer@test.com', password: 'password123' })).body.token;
     const create = await request(app)
       .post('/api/meetings')

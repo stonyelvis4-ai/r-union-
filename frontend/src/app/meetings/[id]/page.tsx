@@ -122,7 +122,12 @@ export default function MeetingDetailPage() {
       return;
     }
     // Sans token : chargement public pour afficher le formulaire d'inscription à la présence (après scan QR)
-    fetch(`${base}/meetings/${id}/public`)
+    if (!scannedQrToken) {
+      setError('Scannez le QR code de la réunion pour accéder à cette page.');
+      setLoading(false);
+      return;
+    }
+    fetch(`${base}/meetings/${id}/public?qrToken=${encodeURIComponent(scannedQrToken)}`)
       .then((r) => {
         if (!r.ok) throw new Error('Réunion introuvable');
         return r.json();
@@ -219,7 +224,7 @@ export default function MeetingDetailPage() {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
-                        meetingId: id,
+                        qrToken: scannedQrToken,
                         attendeeName: attendeeName.trim() || undefined,
                         attendeeEmail: attendeeEmail.trim() || undefined,
                       }),
