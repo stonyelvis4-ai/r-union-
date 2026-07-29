@@ -2,10 +2,21 @@ import type { Metadata } from 'next';
 import './globals.css';
 import ThemeProvider from '@/components/ThemeProvider';
 import ThemeToggle from '@/components/ThemeToggle';
+import InstallAppButton from '@/components/InstallAppButton';
 
 export const metadata: Metadata = {
   title: 'SmartReunion',
-  description: 'Meeting management with AI',
+  description: 'Gestion intelligente de réunions',
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'SmartReunion',
+  },
 };
 
 export default function RootLayout({
@@ -19,6 +30,7 @@ export default function RootLayout({
         <ThemeProvider>
           {children}
           <ThemeToggle />
+          <InstallAppButton />
         </ThemeProvider>
       </body>
     </html>
