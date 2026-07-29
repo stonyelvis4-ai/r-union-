@@ -136,12 +136,6 @@ export default function LoginPage() {
             Continuer avec Google
           </button>
 
-          <p className="mt-4 text-center text-xs text-gray-500 dark:text-slate-300">
-            Comptes de démo : <span className="font-semibold">admin@demo.local</span> et{' '}
-            <span className="font-semibold">participant@demo.local</span> (mot de passe{' '}
-            <span className="font-semibold">Demo123!</span>).
-          </p>
-
           <p className="mt-2 text-center text-xs text-gray-500 dark:text-slate-300">
             Pas encore de compte ?{' '}
             <Link href="/register" className="inline-flex items-center gap-1 font-semibold text-blue-300 hover:text-blue-200">

@@ -95,8 +95,6 @@ npm run dev
 
 Web app at `http://localhost:3000`. Register or login (Organizer/Admin) to create meetings.
 
-**Comptes de démonstration** : exécuter `cd backend && npm run db:seed` pour créer admin@demo.local, organizer@demo.local, participant@demo.local (mot de passe commun : `Demo123!`). Voir [backend/scripts/COMPTES-DEMO.md](../../backend/scripts/COMPTES-DEMO.md).
-
 ---
 
 ## 5. Mobile (Expo)

@@ -9,7 +9,6 @@
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:schema": "node scripts/run-schema.js",
-    "db:seed": "node scripts/seed-users.js",
     "lint": "eslint src --ext .ts",
     "test": "vitest run",
     "test:watch": "vitest"
