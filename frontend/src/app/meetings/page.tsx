@@ -84,9 +84,9 @@ export default function MeetingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pb-10 pt-6 text-gray-900 dark:text-slate-50">
-      <div className="mx-auto max-w-5xl">
-        <header className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="sr-grid min-h-screen bg-slate-950 px-4 pb-10 pt-6 text-slate-50 sm:px-6">
+      <div className="mx-auto max-w-6xl">
+        <header className="mb-7 flex flex-col gap-4 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight md:text-3xl">
               <span aria-hidden className="text-sky-400">📋</span>
@@ -99,7 +99,7 @@ export default function MeetingsPage() {
           <div>
             <Link
               href="/meetings/new"
-              className="inline-flex items-center gap-2 rounded-full bg-blue-500 px-4 py-1.5 text-xs font-semibold text-slate-950 shadow-md shadow-blue-500/40 hover:bg-blue-400"
+              className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200"
             >
               <span aria-hidden className="text-[13px]">➕</span>
               Nouvelle réunion
@@ -108,7 +108,7 @@ export default function MeetingsPage() {
         </header>
 
         {token && (
-        <div className="mb-4">
+        <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.035] p-1.5 backdrop-blur-xl">
           <SearchFilters
             value={filters}
             onChange={setFilters}
@@ -137,17 +137,17 @@ export default function MeetingsPage() {
             {meetings.map((m) => (
               <li
                 key={m.id}
-                className="group relative overflow-hidden rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/70 p-4 shadow-sm shadow-gray-200 dark:shadow-slate-950/50 transition hover:-translate-y-1 hover:border-sky-500/70 hover:shadow-sky-200/60 dark:hover:shadow-sky-900/60"
+                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-xl shadow-black/10 transition duration-300 hover:-translate-y-1 hover:border-cyan-300/35 hover:bg-white/[0.07]"
               >
-                <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-sky-500/20 via-cyan-400/10 to-transparent opacity-0 transition group-hover:opacity-100" />
+                <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-cyan-300/10 blur-2xl transition group-hover:bg-cyan-300/20" />
                 <Link
                   href={`/meetings/${m.id}`}
-                  className="relative flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-slate-50 hover:text-sky-700 dark:hover:text-sky-100"
+                  className="relative flex items-center gap-2 text-base font-semibold text-white transition hover:text-cyan-200"
                 >
                   <span aria-hidden className="text-base">🗓️</span>
                   {m.title}
                 </Link>
-                <p className="relative mt-1 text-xs text-gray-500 dark:text-slate-300">
+                <p className="relative mt-2 text-sm text-slate-400">
                   {new Date(m.date).toLocaleDateString('fr-FR')} · {m.time} ·{' '}
                   <span className="rounded-full bg-gray-100 dark:bg-slate-800/80 px-2 py-0.5 text-[11px] uppercase tracking-wide text-sky-300">
                     {m.status}
@@ -164,7 +164,7 @@ export default function MeetingsPage() {
         )}
         <Link
           href="/"
-          className="mt-8 inline-flex items-center gap-2 text-xs font-medium text-gray-400 dark:text-slate-400 hover:text-sky-300"
+          className="mt-8 inline-flex items-center gap-2 text-xs font-medium text-slate-500 hover:text-cyan-200"
         >
           <span aria-hidden>←</span>
           Retour à l'accueil

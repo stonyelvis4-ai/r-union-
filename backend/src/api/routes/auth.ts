@@ -18,6 +18,10 @@ const loginSchema = z.object({
   password: z.string(),
 });
 
+const googleLoginSchema = z.object({
+  accessToken: z.string().min(1),
+});
+
 export const authRouter = Router();
 
 authRouter.post('/register', async (req: Request, res: Response, next: NextFunction) => {
@@ -87,6 +91,64 @@ authRouter.post('/login', async (req: Request, res: Response, next: NextFunction
       { sub: user.id, email: user.email, role: user.role },
       secret
     );
+    res.json({
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      token,
+    });
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      res.status(400).json({ error: 'Bad Request', errors: e.flatten() });
+      return;
+    }
+    next(e);
+  }
+});
+
+authRouter.post('/google', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { accessToken } = googleLoginSchema.parse(req.body);
+    const env = getEnv();
+    if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.JWT_SECRET) {
+      res.status(500).json({ error: 'Server misconfiguration', message: 'Google login is not configured' });
+      return;
+    }
+
+    const authResponse = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        apikey: env.SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    if (!authResponse.ok) {
+      res.status(401).json({ error: 'Unauthorized', message: 'Google session is invalid' });
+      return;
+    }
+
+    const googleUser = (await authResponse.json()) as {
+      email?: string;
+      user_metadata?: { full_name?: string; name?: string };
+    };
+    if (!googleUser.email) {
+      res.status(401).json({ error: 'Unauthorized', message: 'Google account has no email address' });
+      return;
+    }
+
+    const user = await prisma.user.upsert({
+      where: { email: googleUser.email },
+      update: {},
+      create: {
+        email: googleUser.email,
+        name: googleUser.user_metadata?.full_name ?? googleUser.user_metadata?.name,
+        passwordHash: await hashPassword(crypto.randomUUID()),
+        role: 'PARTICIPANT',
+      },
+    });
+    if (!user.isActive) {
+      res.status(401).json({ error: 'Unauthorized', message: 'This account is disabled' });
+      return;
+    }
+
+    const token = issueToken({ sub: user.id, email: user.email, role: user.role }, env.JWT_SECRET);
     res.json({
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
       token,

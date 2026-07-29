@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900 transition-colors duration-200;
+    @apply bg-gray-50 text-gray-900 antialiased transition-colors duration-200;
   }
   .dark body {
     @apply bg-slate-950 text-slate-50;
@@ -12,6 +12,40 @@
 }
 
 @layer utilities {
+  .sr-grid {
+    background-image: linear-gradient(rgba(148, 163, 184, 0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.055) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  .sr-orb {
+    pointer-events: none;
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(100px);
+    opacity: 0.28;
+  }
+
+  .sr-orb-one {
+    top: -13rem;
+    left: 8%;
+    height: 26rem;
+    width: 26rem;
+    background: #0e7490;
+  }
+
+  .sr-orb-two {
+    right: -10rem;
+    top: 25%;
+    height: 25rem;
+    width: 25rem;
+    background: #3730a3;
+  }
+
+  .sr-surface {
+    @apply border border-gray-200 bg-white shadow-sm shadow-slate-200/60 dark:border-white/10 dark:bg-slate-900/70 dark:shadow-black/20;
+  }
+
   @keyframes sr-float {
     0%,
     100% {

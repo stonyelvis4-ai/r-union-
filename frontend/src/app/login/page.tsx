@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getApiBase } from '@/services/api';
+import { supabase } from '@/services/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,6 +35,23 @@ export default function LoginPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur');
     } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleGoogleLogin() {
+    if (!supabase) {
+      setError('La connexion Google est en cours de configuration.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    const { error: googleError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (googleError) {
+      setError('Impossible de démarrer la connexion Google.');
       setLoading(false);
     }
   }
@@ -101,6 +119,21 @@ export default function LoginPage() {
               {loading ? 'Connexion…' : 'Se connecter'}
             </button>
           </form>
+
+          <div className="my-5 flex items-center gap-3 text-xs text-gray-400 dark:text-slate-500">
+            <span className="h-px flex-1 bg-gray-200 dark:bg-slate-800" />
+            ou
+            <span className="h-px flex-1 bg-gray-200 dark:bg-slate-800" />
+          </div>
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-800"
+          >
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-xs font-bold text-blue-600 shadow-sm">G</span>
+            Continuer avec Google
+          </button>
 
           <p className="mt-4 text-center text-xs text-gray-500 dark:text-slate-300">
             Comptes de démo : <span className="font-semibold">admin@demo.local</span> et{' '}
