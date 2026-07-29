@@ -66,8 +66,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-950 px-4 py-10 text-gray-900 dark:text-slate-50">
-      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-6 shadow-2xl shadow-gray-300 dark:shadow-slate-950/70 backdrop-blur">
+    <div className="flex min-h-screen items-start justify-center bg-gray-50 px-4 py-5 text-gray-900 dark:bg-slate-950 dark:text-slate-50 sm:items-center sm:py-10">
+      <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl shadow-gray-300 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-slate-950/70 sm:p-6">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(59,130,246,0.4),transparent_55%),radial-gradient(circle_at_120%_120%,rgba(37,99,235,0.35),transparent_55%)]" />
         <div className="relative">
           <div className="mb-4 flex items-center justify-between">
@@ -148,7 +148,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="mt-2 w-full rounded-full bg-blue-500 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-blue-500/40 transition hover:-translate-y-0.5 hover:bg-blue-400 disabled:opacity-50"
+              className="mt-2 min-h-12 w-full rounded-xl bg-blue-500 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-blue-500/40 transition hover:-translate-y-0.5 hover:bg-blue-400 disabled:opacity-50 sm:min-h-0 sm:rounded-full sm:py-2"
             >
               {loading ? 'Inscription…' : "S'inscrire"}
             </button>

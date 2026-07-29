@@ -110,4 +110,10 @@
       transform: translateX(100%);
     }
   }
+
+  @media (max-width: 640px) {
+    html { -webkit-text-size-adjust: 100%; }
+    input, textarea, select { font-size: 16px !important; }
+    .sr-grid { background-size: 36px 36px; }
+  }
 }

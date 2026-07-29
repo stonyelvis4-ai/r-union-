@@ -84,10 +84,10 @@ export default function MeetingsPage() {
   }
 
   return (
-    <div className="sr-grid min-h-screen bg-slate-950 px-4 pb-10 pt-6 text-slate-50 sm:px-6">
+    <div className="sr-grid min-h-screen bg-slate-950 px-4 pb-12 pt-5 text-slate-50 sm:px-6 sm:pt-6">
       <div className="mx-auto max-w-6xl">
         <header className="mb-7 flex flex-col gap-4 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
-          <div>
+          <div className="w-full md:w-auto">
             <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight md:text-3xl">
               <span aria-hidden className="text-sky-400">📋</span>
               Mes réunions
@@ -99,7 +99,7 @@ export default function MeetingsPage() {
           <div>
             <Link
               href="/meetings/new"
-              className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200 md:w-auto md:py-2.5"
             >
               <span aria-hidden className="text-[13px]">➕</span>
               Nouvelle réunion
@@ -137,12 +137,12 @@ export default function MeetingsPage() {
             {meetings.map((m) => (
               <li
                 key={m.id}
-                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-xl shadow-black/10 transition duration-300 hover:-translate-y-1 hover:border-cyan-300/35 hover:bg-white/[0.07]"
+                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-xl shadow-black/10 transition duration-300 hover:-translate-y-1 hover:border-cyan-300/35 hover:bg-white/[0.07] sm:p-5"
               >
                 <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-cyan-300/10 blur-2xl transition group-hover:bg-cyan-300/20" />
                 <Link
                   href={`/meetings/${m.id}`}
-                  className="relative flex items-center gap-2 text-base font-semibold text-white transition hover:text-cyan-200"
+                  className="relative flex min-h-11 items-center gap-2 text-base font-semibold text-white transition hover:text-cyan-200"
                 >
                   <span aria-hidden className="text-base">🗓️</span>
                   {m.title}

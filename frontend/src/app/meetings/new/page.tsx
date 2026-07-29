@@ -64,9 +64,9 @@ export default function NewMeetingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 py-10 text-gray-900 dark:text-slate-50">
+    <main className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 py-5 text-gray-900 dark:text-slate-50 sm:py-10">
       <div className="mx-auto max-w-3xl">
-        <header className="mb-6 flex items-center justify-between">
+        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
               <span aria-hidden className="text-blue-400">➕</span>
@@ -78,7 +78,7 @@ export default function NewMeetingPage() {
           </div>
           <Link
             href="/meetings"
-            className="text-xs font-medium text-gray-500 dark:text-slate-300 hover:text-blue-300"
+            className="inline-flex min-h-11 items-center text-sm font-medium text-gray-500 dark:text-slate-300 hover:text-blue-300 sm:min-h-0 sm:text-xs"
           >
             <span aria-hidden>📋</span> Retour à la liste
           </Link>
@@ -86,7 +86,7 @@ export default function NewMeetingPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-6 shadow-xl shadow-gray-200 dark:shadow-slate-950/60"
+          className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4 shadow-xl shadow-gray-200 dark:shadow-slate-950/60 sm:p-6"
         >
           {error && (
             <p className="mb-4 text-sm text-rose-300">
@@ -109,7 +109,7 @@ export default function NewMeetingPage() {
               />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-gray-700 dark:text-slate-200">
                   <span aria-hidden>📅</span> Date *
@@ -177,17 +177,17 @@ export default function NewMeetingPage() {
             </div>
           </div>
 
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-2 rounded-full bg-blue-500 px-5 py-2 text-sm font-semibold text-slate-950 shadow-md shadow-blue-500/40 hover:bg-blue-400 disabled:opacity-50"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-blue-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-md shadow-blue-500/40 hover:bg-blue-400 disabled:opacity-50 sm:rounded-full sm:py-2"
             >
               <span aria-hidden>✅</span> {loading ? 'Création\u2026' : 'Créer'}
             </button>
             <Link
               href="/meetings"
-              className="inline-flex items-center gap-2 rounded-full border border-gray-300 dark:border-slate-600 px-5 py-2 text-sm font-medium text-gray-800 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gray-300 dark:border-slate-600 px-5 py-3 text-sm font-medium text-gray-800 dark:text-slate-100 hover:bg-gray-100 dark:hover:bg-slate-800 sm:rounded-full sm:py-2"
             >
               <span aria-hidden>↩️</span> Annuler
             </Link>

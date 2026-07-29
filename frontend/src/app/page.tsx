@@ -8,12 +8,12 @@ const highlights = [
 
 export default function Home() {
   return (
-    <main className="sr-grid min-h-screen overflow-hidden bg-slate-950 px-5 pb-10 pt-5 text-slate-50 sm:px-8 lg:px-12">
+    <main className="sr-grid min-h-screen overflow-hidden bg-slate-950 px-4 pb-12 pt-4 text-slate-50 sm:px-8 sm:pt-5 lg:px-12">
       <div className="sr-orb sr-orb-one" />
       <div className="sr-orb sr-orb-two" />
 
       <div className="relative mx-auto max-w-7xl">
-        <nav className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3 backdrop-blur-xl sm:px-5">
+        <nav className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.035] px-3 py-3 backdrop-blur-xl sm:px-5">
           <Link href="/" className="flex items-center gap-3" aria-label="SmartReunion, accueil">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-cyan-300 to-blue-600 shadow-lg shadow-cyan-500/20">
               <svg viewBox="0 0 24 24" aria-hidden className="h-5 w-5 fill-slate-950">
@@ -32,24 +32,24 @@ export default function Home() {
           </div>
         </nav>
 
-        <section className="grid items-center gap-12 pb-16 pt-16 lg:grid-cols-[1.08fr_.92fr] lg:pb-24 lg:pt-24">
+        <section className="grid items-center gap-10 pb-14 pt-12 sm:gap-12 sm:pb-16 sm:pt-16 lg:grid-cols-[1.08fr_.92fr] lg:pb-24 lg:pt-24">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-semibold text-cyan-100">
               <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_#67e8f9]" />
               L&apos;espace de travail des équipes alignées
             </div>
-            <h1 className="mt-6 max-w-3xl text-4xl font-semibold tracking-[-0.055em] text-white sm:text-5xl lg:text-6xl">
+            <h1 className="mt-5 max-w-3xl text-[2.45rem] font-semibold leading-[0.98] tracking-[-0.055em] text-white sm:mt-6 sm:text-5xl lg:text-6xl">
               Faites de chaque réunion un{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-sky-300 to-indigo-300">point de départ.</span>
             </h1>
             <p className="mt-6 max-w-xl text-base leading-7 text-slate-300 sm:text-lg">
               Planifiez, animez et transformez vos échanges en décisions concrètes, sans disperser votre équipe entre plusieurs outils.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href="/register" className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-3 text-sm font-bold text-slate-950 shadow-xl shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link href="/register" className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-5 py-3.5 text-sm font-bold text-slate-950 shadow-xl shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200 sm:w-auto sm:py-3">
                 Commencer gratuitement <span aria-hidden>→</span>
               </Link>
-              <Link href="/login" className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/[0.045] px-5 py-3 text-sm font-semibold text-white transition hover:border-cyan-200/40 hover:bg-white/[0.08]">
+              <Link href="/login" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.045] px-5 py-3.5 text-sm font-semibold text-white transition hover:border-cyan-200/40 hover:bg-white/[0.08] sm:w-auto sm:py-3">
                 Accéder à mes réunions
               </Link>
             </div>
@@ -62,7 +62,7 @@ export default function Home() {
 
           <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
             <div className="absolute -inset-5 rounded-[2rem] bg-cyan-400/10 blur-3xl" />
-            <div className="relative rounded-[1.7rem] border border-white/10 bg-slate-900/75 p-4 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-5">
+            <div className="relative rounded-[1.5rem] border border-white/10 bg-slate-900/75 p-3.5 shadow-2xl shadow-black/40 backdrop-blur-xl sm:rounded-[1.7rem] sm:p-5">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div className="flex items-center gap-2.5">
                   <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
