@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'ADMIN' | 'PARTICIPANT'>('PARTICIPANT');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +25,7 @@ export default function RegisterPage() {
       const res = await fetch(`${base}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name: name || undefined }),
+        body: JSON.stringify({ email, password, name: name || undefined, role }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -54,6 +55,7 @@ export default function RegisterPage() {
 
     setError('');
     setLoading(true);
+    localStorage.setItem('signupRole', role);
     const { error: googleError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/auth/callback` },
@@ -101,6 +103,22 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-300">
+                <span aria-hidden>👤</span> Type de compte
+              </label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as 'ADMIN' | 'PARTICIPANT')}
+                className="mt-1 w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-950/60 px-3 py-2 text-sm text-gray-900 dark:text-slate-50 outline-none ring-blue-500/0 transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/40"
+              >
+                <option value="PARTICIPANT">Participant</option>
+                <option value="ADMIN">Administrateur</option>
+              </select>
+              {role === 'ADMIN' && (
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-300">Un administrateur peut créer et gérer les réunions.</p>
+              )}
+            </div>
             <div>
               <label className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-300">
                 <span aria-hidden>👤</span> Nom (optionnel)

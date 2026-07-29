@@ -22,10 +22,15 @@ export default function GoogleAuthCallbackPage() {
         return;
       }
 
+      const signupRole = localStorage.getItem('signupRole');
+      localStorage.removeItem('signupRole');
       const response = await fetch(`${getApiBase()}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: data.session.access_token }),
+        body: JSON.stringify({
+          accessToken: data.session.access_token,
+          role: signupRole === 'ADMIN' ? 'ADMIN' : signupRole === 'PARTICIPANT' ? 'PARTICIPANT' : undefined,
+        }),
       });
       const payload = (await response.json().catch(() => ({}))) as { token?: string; message?: string };
 

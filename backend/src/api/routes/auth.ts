@@ -11,6 +11,7 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   name: z.string().optional(),
+  role: z.enum(['ADMIN', 'PARTICIPANT']).default('PARTICIPANT'),
 });
 
 const loginSchema = z.object({
@@ -20,6 +21,7 @@ const loginSchema = z.object({
 
 const googleLoginSchema = z.object({
   accessToken: z.string().min(1),
+  role: z.enum(['ADMIN', 'PARTICIPANT']).optional(),
 });
 
 export const authRouter = Router();
@@ -38,7 +40,7 @@ authRouter.post('/register', async (req: Request, res: Response, next: NextFunct
         email: body.email,
         name: body.name,
         passwordHash,
-        role: 'PARTICIPANT',
+        role: body.role,
       },
     });
     const secret = getEnv().JWT_SECRET;
@@ -106,7 +108,7 @@ authRouter.post('/login', async (req: Request, res: Response, next: NextFunction
 
 authRouter.post('/google', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { accessToken } = googleLoginSchema.parse(req.body);
+    const { accessToken, role } = googleLoginSchema.parse(req.body);
     const env = getEnv();
     if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY || !env.JWT_SECRET) {
       res.status(500).json({ error: 'Server misconfiguration', message: 'Google login is not configured' });
@@ -140,7 +142,7 @@ authRouter.post('/google', async (req: Request, res: Response, next: NextFunctio
         email: googleUser.email,
         name: googleUser.user_metadata?.full_name ?? googleUser.user_metadata?.name,
         passwordHash: await hashPassword(crypto.randomUUID()),
-        role: 'PARTICIPANT',
+        role: role ?? 'PARTICIPANT',
       },
     });
     if (!user.isActive) {
