@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "SmartReunion",
+    "slug": "smartreunion",
+    "scheme": "smartreunion",
+    "version": "1.0.0",
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Autoriser l'accès à la caméra pour scanner les QR codes",
+          "microphonePermission": "Autoriser le micro pour l'enregistrement"
+        }
+      ]
+    ]
+  }
+}
