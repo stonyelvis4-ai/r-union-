@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getApiBase } from '@/services/api';
+import { supabase } from '@/services/supabase';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -45,6 +46,25 @@ export default function RegisterPage() {
     }
   }
 
+  async function handleGoogleSignup() {
+    if (!supabase) {
+      setError('La connexion Google est en cours de configuration.');
+      return;
+    }
+
+    setError('');
+    setLoading(true);
+    const { error: googleError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+
+    if (googleError) {
+      setError("Impossible de démarrer l'inscription avec Google.");
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-950 px-4 py-10 text-gray-900 dark:text-slate-50">
       <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-6 shadow-2xl shadow-gray-300 dark:shadow-slate-950/70 backdrop-blur">
@@ -62,8 +82,25 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            {error && <p className="text-sm text-rose-400">{error}</p>}
+          {error && <p className="mt-4 text-sm text-rose-400">{error}</p>}
+
+          <button
+            type="button"
+            onClick={handleGoogleSignup}
+            disabled={loading}
+            className="mt-4 flex w-full items-center justify-center gap-3 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 transition hover:bg-gray-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-800"
+          >
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-xs font-bold text-blue-600 shadow-sm">G</span>
+            S'inscrire avec Google
+          </button>
+
+          <div className="my-5 flex items-center gap-3 text-xs text-gray-400 dark:text-slate-500">
+            <span className="h-px flex-1 bg-gray-200 dark:bg-slate-800" />
+            ou
+            <span className="h-px flex-1 bg-gray-200 dark:bg-slate-800" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-300">
                 <span aria-hidden>👤</span> Nom (optionnel)
