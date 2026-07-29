@@ -10,6 +10,10 @@ export async function getSummary(meetingId: string) {
   });
 }
 
+export async function setSummaryShared(meetingId: string, isSharedWithParticipants: boolean) {
+  return prisma.summary.update({ where: { meetingId }, data: { isSharedWithParticipants } });
+}
+
 export async function generateSummary(meetingId: string): Promise<{ id: string } | null> {
   const meeting = await prisma.meeting.findUnique({
     where: { id: meetingId },
@@ -69,25 +73,6 @@ export async function generateSummary(meetingId: string): Promise<{ id: string }
       nextSteps,
     },
   });
-
-  const allEmails = new Set<string>();
-  meeting.participants.forEach((p) => { if (p.email) allEmails.add(p.email); });
-  meeting.attendances.forEach((a) => {
-    if (a.user?.email) allEmails.add(a.user.email);
-    if (a.attendeeEmail) allEmails.add(a.attendeeEmail);
-  });
-
-  if (allEmails.size > 0) {
-    let pdfBuffer: Buffer | undefined;
-    try {
-      pdfBuffer = await reportExport.buildPdfBuffer(summary);
-    } catch (e) {
-      console.error('PDF generation for email failed:', e);
-    }
-    emailService
-      .sendReportToParticipants(meetingId, meeting.title, [...allEmails], pdfBuffer)
-      .catch((e) => console.error('Email send error:', e));
-  }
 
   return { id: summary.id };
 }

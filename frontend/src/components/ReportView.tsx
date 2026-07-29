@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { getApiBase } from '@/services/api';
 
 export interface SummaryData {
@@ -15,6 +16,7 @@ export interface SummaryData {
   nextSteps: string;
   generatedAt: string;
   version: number;
+  isSharedWithParticipants?: boolean;
 }
 
 interface ReportViewProps {
@@ -25,6 +27,16 @@ interface ReportViewProps {
 
 export default function ReportView({ meetingId, summary, token }: ReportViewProps) {
   const API_BASE = getApiBase();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [shared, setShared] = useState(Boolean(summary.isSharedWithParticipants));
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((user) => setIsAdmin(user?.role === 'ADMIN'))
+      .catch(() => undefined);
+  }, [API_BASE, token]);
   const download = (format: 'pdf' | 'docx') => {
     if (!token) return;
     const url = `${API_BASE}/meetings/${meetingId}/report?format=${format}`;
@@ -75,6 +87,23 @@ export default function ReportView({ meetingId, summary, token }: ReportViewProp
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={async () => {
+              const next = !shared;
+              const res = await fetch(`${API_BASE}/meetings/${meetingId}/summary/share`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ isSharedWithParticipants: next }),
+              });
+              if (res.ok) setShared(next);
+            }}
+            className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold text-white ${shared ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-slate-600 hover:bg-slate-500'}`}
+          >
+            {shared ? 'Partagé avec les participants' : 'Partager avec les participants'}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => download('pdf')}

@@ -81,6 +81,7 @@ model Summary {
   nextSteps         String   @map("next_steps") @db.Text
   generatedAt       DateTime @default(now()) @map("generated_at")
   version           Int      @default(1)
+  isSharedWithParticipants Boolean @default(false) @map("is_shared_with_participants")
 
   meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
 }
@@ -119,4 +120,5 @@ enum MeetingStatus {
 enum Role {
   ADMIN
   PARTICIPANT
+  ORGANIZER
 }

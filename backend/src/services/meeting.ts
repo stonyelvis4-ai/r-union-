@@ -78,6 +78,28 @@ export async function listAllMeetings() {
   });
 }
 
+export async function listMeetingsForParticipant(email: string) {
+  return prisma.meeting.findMany({
+    where: {
+      participants: { some: { email: { equals: email, mode: 'insensitive' } } },
+      OR: [
+        { status: 'SCHEDULED' },
+        { summary: { is: { isSharedWithParticipants: true } } },
+      ],
+    },
+    orderBy: [{ date: 'asc' }, { time: 'asc' }],
+    include: { participants: true, summary: { select: { isSharedWithParticipants: true } } },
+  });
+}
+
+export async function isParticipantOfMeeting(meetingId: string, email: string) {
+  const participant = await prisma.participant.findFirst({
+    where: { meetingId, email: { equals: email, mode: 'insensitive' } },
+    select: { id: true },
+  });
+  return Boolean(participant);
+}
+
 export async function updateMeeting(
   id: string,
   data: Partial<Pick<Prisma.MeetingUpdateInput, 'title' | 'date' | 'time' | 'location' | 'agenda' | 'status'>>

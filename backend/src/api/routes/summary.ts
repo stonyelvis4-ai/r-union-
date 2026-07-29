@@ -6,6 +6,14 @@ import * as meetingService from '../../services/meeting.js';
 import * as summaryService from '../../services/summary.js';
 import * as reportExport from '../../services/report-export.js';
 
+async function canAccessSharedSummary(meetingId: string, user: NonNullable<AuthRequest['user']>) {
+  if (user.role === 'ADMIN') return true;
+  const member = await meetingService.isParticipantOfMeeting(meetingId, user.email);
+  if (!member) return false;
+  const summary = await summaryService.getSummary(meetingId);
+  return Boolean(summary?.isSharedWithParticipants);
+}
+
 export const summaryRouter = Router();
 
 summaryRouter.get(
@@ -17,6 +25,10 @@ summaryRouter.get(
       const meeting = await meetingService.getMeetingById(req.params.id);
       if (!meeting) {
         res.status(404).json({ error: 'Not Found' });
+        return;
+      }
+      if (!(await canAccessSharedSummary(req.params.id, req.user!))) {
+        res.status(403).json({ error: 'Forbidden', message: 'Report not shared' });
         return;
       }
       const summary = await summaryService.getSummary(req.params.id);
@@ -45,6 +57,10 @@ summaryRouter.get(
       const meeting = await meetingService.getMeetingById(req.params.id);
       if (!meeting) {
         res.status(404).json({ error: 'Not Found' });
+        return;
+      }
+      if (!(await canAccessSharedSummary(req.params.id, req.user!))) {
+        res.status(403).json({ error: 'Forbidden', message: 'Report not shared' });
         return;
       }
       const summary = await summaryService.getSummary(req.params.id);
@@ -94,6 +110,25 @@ summaryRouter.post(
       }
       const summary = await summaryService.getSummary(req.params.id);
       res.status(201).json(summary);
+    } catch (e) {
+      next(e);
+    }
+  }
+);
+
+summaryRouter.patch(
+  '/meetings/:id/summary/share',
+  authMiddleware(),
+  requireAuth,
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (req.user!.role !== 'ADMIN') {
+        res.status(403).json({ error: 'Forbidden' });
+        return;
+      }
+      const isSharedWithParticipants = Boolean(req.body?.isSharedWithParticipants);
+      const summary = await summaryService.setSummaryShared(req.params.id, isSharedWithParticipants);
+      res.json(summary);
     } catch (e) {
       next(e);
     }

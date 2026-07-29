@@ -75,13 +75,12 @@ meetingsRouter.get(
   '/',
   authMiddleware(),
   requireAuth,
-  requireOrganizer,
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       if (!req.user) return;
       const meetings = req.user.role === 'ADMIN'
         ? await meetingService.listAllMeetings()
-        : await meetingService.listMeetingsByOwner(req.user.sub);
+        : await meetingService.listMeetingsForParticipant(req.user.email);
       res.json(meetings);
     } catch (e) {
       next(e);
@@ -122,6 +121,10 @@ meetingsRouter.get(
       const meeting = await meetingService.getMeetingById(req.params.id);
       if (!meeting) {
         res.status(404).json({ error: 'Not Found' });
+        return;
+      }
+      if (req.user!.role !== 'ADMIN' && !(await meetingService.isParticipantOfMeeting(meeting.id, req.user!.email))) {
+        res.status(403).json({ error: 'Forbidden' });
         return;
       }
       res.json(meeting);
@@ -249,6 +252,7 @@ meetingsRouter.get(
   '/:meetingId/participants',
   authMiddleware(),
   requireAuth,
+  requireOrganizer,
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const list = await participantService.listParticipantsByMeeting(req.params.meetingId);
