@@ -64,6 +64,18 @@ npm run dev
 
 App web : `http://localhost:3000`.
 
+## Déploiement Vercel (frontend)
+
+Le frontend Next.js peut être déployé sur Vercel. Dans l’écran d’import du dépôt, définir **Root Directory** sur `frontend`.
+
+Dans les variables d’environnement Vercel, ajouter :
+
+```env
+NEXT_PUBLIC_API_URL=https://votre-api.example.com/api
+```
+
+Cette valeur doit être l’URL HTTPS publique du backend et inclure `/api`. L’API Express et la base PostgreSQL ne peuvent pas utiliser `localhost` en production : hébergez-les séparément (par exemple Render, Railway ou une API Vercel adaptée au serverless) puis configurez aussi `DATABASE_URL`, `JWT_SECRET`, `OPENAI_API_KEY` et, si besoin, les variables SMTP uniquement dans cet hébergement backend.
+
 ### 3. Mobile (Expo)
 
 ```bash
