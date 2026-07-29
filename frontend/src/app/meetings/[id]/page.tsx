@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { QRCodeCanvas } from 'qrcode.react';
 import { getApiBase } from '@/services/api';
@@ -27,6 +27,7 @@ interface TranscriptionState {
 export default function MeetingDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = params.id as string;
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
@@ -44,22 +45,50 @@ export default function MeetingDetailPage() {
   const [attendeeEmail, setAttendeeEmail] = useState('');
   const [presenceLoading, setPresenceLoading] = useState(false);
   const [presenceError, setPresenceError] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [joinMessage, setJoinMessage] = useState('');
 
   const base = getApiBase();
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const scannedQrToken = searchParams.get('qr');
 
   useEffect(() => {
     if (typeof window !== 'undefined' && id) {
       const origin = process.env.NEXT_PUBLIC_APP_URL?.trim() || window.location.origin;
-      setPublicMeetingUrl(`${origin.replace(/\/$/, '')}/meetings/${id}`);
+      const qrQuery = meeting?.qrToken ? `?qr=${encodeURIComponent(meeting.qrToken)}` : '';
+      setPublicMeetingUrl(`${origin.replace(/\/$/, '')}/meetings/${id}${qrQuery}`);
     }
-  }, [id]);
+  }, [id, meeting?.qrToken]);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${base}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((user) => setIsAdmin(user?.role === 'ADMIN'))
+      .catch(() => undefined);
+  }, [base, token]);
 
   useEffect(() => {
     if (!id || !base) return;
     if (token) {
       const load = async () => {
         try {
+          if (scannedQrToken) {
+            const joinRes = await fetch(`${base}/meetings/${id}/join`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ qrToken: scannedQrToken }),
+            });
+            const joinData = await joinRes.json().catch(() => ({}));
+            if (!joinRes.ok) {
+              throw new Error((joinData as { message?: string }).message || 'Code QR invalide');
+            }
+            setJoinMessage(
+              (joinData as { alreadyRecorded?: boolean }).alreadyRecorded
+                ? 'Vous participez déjà à cette réunion.'
+                : 'Participation confirmée : votre présence a été enregistrée.'
+            );
+          }
           const [meetingRes, attendanceRes, transcriptionRes, summaryRes] = await Promise.all([
             fetch(`${base}/meetings/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`${base}/meetings/${id}/attendance`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -104,7 +133,7 @@ export default function MeetingDetailPage() {
       })
       .catch(() => setError('Réunion introuvable'))
       .finally(() => setLoading(false));
-  }, [id, base, token]);
+  }, [id, base, token, scannedQrToken]);
 
   // Polling de la transcription tant qu'elle est « En cours »
   useEffect(() => {
@@ -335,6 +364,12 @@ export default function MeetingDetailPage() {
           )}
         </section>
 
+        {joinMessage && (
+          <div className="rounded-xl border border-emerald-400/40 bg-emerald-50 p-3 text-sm font-medium text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+            ✓ {joinMessage}
+          </div>
+        )}
+
         <section className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,2fr)]">
           <div className="space-y-4">
             <div className="sr-tile rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4">
@@ -563,7 +598,7 @@ export default function MeetingDetailPage() {
             </div>
           )}
 
-          <div className="sr-tile rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-5 shadow-lg shadow-gray-200 dark:shadow-slate-950/60">
+          {isAdmin && <div className="sr-tile rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-5 shadow-lg shadow-gray-200 dark:shadow-slate-950/60">
             <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100">
               <span aria-hidden>📱</span> QR Code de la réunion
             </h2>
@@ -615,7 +650,7 @@ export default function MeetingDetailPage() {
                 </div>
               )}
             </div>
-          </div>
+          </div>}
         </section>
       </div>
     </div>

@@ -71,6 +71,10 @@ const addParticipantSchema = z.object({
   displayName: z.string().max(200).optional(),
 });
 
+const joinByQrSchema = z.object({
+  qrToken: z.string().min(20).max(200),
+});
+
 meetingsRouter.get(
   '/',
   authMiddleware(),
@@ -129,6 +133,41 @@ meetingsRouter.get(
       }
       res.json(meeting);
     } catch (e) {
+      next(e);
+    }
+  }
+);
+
+/** Un participant connecté rejoint une réunion après avoir scanné son QR code. */
+meetingsRouter.post(
+  '/:id/join',
+  authMiddleware(),
+  requireAuth,
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      if (!req.user) return;
+      const { qrToken } = joinByQrSchema.parse(req.body);
+      const meeting = await meetingService.getMeetingByQrToken(qrToken);
+      if (!meeting || meeting.id !== req.params.id || meeting.status === 'CANCELLED') {
+        res.status(404).json({ error: 'Not Found', message: 'Code QR invalide ou réunion indisponible' });
+        return;
+      }
+
+      const participant = await participantService.joinParticipantFromQr(
+        meeting.id,
+        req.user.email
+      );
+      const scan = await attendanceService.recordScan({
+        meetingId: meeting.id,
+        userId: req.user.sub,
+        attendeeEmail: req.user.email,
+      });
+      res.json({ success: true, participant, alreadyRecorded: scan?.alreadyRecorded ?? false });
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        res.status(400).json({ error: 'Bad Request', errors: e.flatten() });
+        return;
+      }
       next(e);
     }
   }
