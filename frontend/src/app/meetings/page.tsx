@@ -104,7 +104,13 @@ export default function MeetingsPage() {
               Visualisez, filtrez et créez vos réunions en temps réel.
             </p>
           </div>
-          {isAdmin && <div>
+          {isAdmin && <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
+            <Link
+              href="/dashboard"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
+            >
+              Tableau de bord
+            </Link>
             <Link
               href="/meetings/new"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200 md:w-auto md:py-2.5"
