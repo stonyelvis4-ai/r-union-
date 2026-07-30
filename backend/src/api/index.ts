@@ -6,6 +6,7 @@ import { recordingRouter, transcriptionRouter } from './routes/recording.js';
 import { summaryRouter } from './routes/summary.js';
 import { usersRouter } from './routes/users.js';
 import { dashboardRouter } from './routes/dashboard.js';
+import { trainingsRouter } from './routes/trainings.js';
 import { errorHandler } from './errorHandler.js';
 import { rateLimit } from './middleware/rateLimit.js';
 
@@ -23,5 +24,6 @@ apiRouter.use(transcriptionRouter);
 apiRouter.use(summaryRouter);
 apiRouter.use('/users', usersRouter);
 apiRouter.use('/dashboard', dashboardRouter);
+apiRouter.use('/trainings', trainingsRouter);
 
 apiRouter.use(errorHandler);

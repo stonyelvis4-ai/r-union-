@@ -21,6 +21,61 @@ model User {
   attendances   Attendance[] @relation("AttendanceUser")
 }
 
+model Training {
+  id              String              @id @default(cuid())
+  title           String
+  description     String?             @db.Text
+  mode            TrainingMode
+  date            DateTime            @db.Date
+  time            String
+  trainer         String?
+  location        String?
+  onlineUrl       String?             @map("online_url")
+  status          TrainingStatus      @default(DRAFT)
+  qrToken         String              @unique @map("qr_token")
+  qrActive        Boolean             @default(true) @map("qr_active")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  presentationItems TrainingPresentationItem[]
+  registrations     TrainingRegistration[]
+}
+
+model TrainingPresentationItem {
+  id              String   @id @default(cuid())
+  trainingId      String   @map("training_id")
+  title           String
+  description     String?  @db.Text
+  durationMinutes Int?     @map("duration_minutes")
+  resourceUrl     String?  @map("resource_url")
+  position        Int
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  training Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+
+  @@unique([trainingId, position])
+}
+
+model TrainingRegistration {
+  id           String   @id @default(cuid())
+  trainingId   String   @map("training_id")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  email        String
+  phone        String
+  cityCountry  String?  @map("city_country")
+  organization String?
+  jobTitle     String?  @map("job_title")
+  timezone     String?
+  signature    String   @db.Text
+  signedAt     DateTime @default(now()) @map("signed_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  training Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+
+  @@unique([trainingId, email])
+}
+
 model Meeting {
   id        String   @id @default(cuid())
   title     String
@@ -121,4 +176,16 @@ enum Role {
   ADMIN
   PARTICIPANT
   ORGANIZER
+}
+
+enum TrainingMode {
+  PRESENTIAL
+  ONLINE
+}
+
+enum TrainingStatus {
+  DRAFT
+  PUBLISHED
+  COMPLETED
+  CANCELLED
 }
