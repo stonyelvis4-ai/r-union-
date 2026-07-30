@@ -33,7 +33,7 @@ export default function AdminEditUserPage() {
     if (!token || !id) return;
     fetch(`${API_BASE}/users/${id}`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => {
-        if (res.status === 403) router.push('/admin/users');
+        if (res.status === 403 || res.status === 404) router.push('/admin/users');
         if (!res.ok) return null;
         return res.json();
       })
@@ -77,13 +77,15 @@ export default function AdminEditUserPage() {
       .finally(() => setLoading(false));
   };
 
-  if (loadUser || !user) {
+  if (loadUser) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-slate-950 px-4 py-10 text-gray-700 dark:text-slate-200">
         <p className="text-sm">Chargement&hellip;</p>
       </div>
     );
   }
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 pb-10 pt-6 text-gray-900 dark:text-slate-50">

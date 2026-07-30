@@ -21,3 +21,9 @@ if (fs.existsSync(envPath)) {
     }
   }
 }
+
+// Les tests de contrat créent des données. Ils ne doivent jamais utiliser la
+// base de production configurée dans .env : fournissez une base dédiée.
+if (process.env.TEST_DATABASE_URL) {
+  process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
+}

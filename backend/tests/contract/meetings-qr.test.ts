@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/api', apiRouter);
 
-describe('Meetings QR API contract', () => {
+describe.skipIf(!process.env.TEST_DATABASE_URL)('Meetings QR API contract', () => {
   let meetingId: string;
   let qrToken: string;
   let token: string;

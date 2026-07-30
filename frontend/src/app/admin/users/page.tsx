@@ -72,10 +72,10 @@ export default function AdminUsersPage() {
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight md:text-3xl">
               <span aria-hidden className="text-amber-400">⚙️</span>
-              Gestion des utilisateurs
+              Gestion des participants
             </h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-slate-300">
-              Créez, modifiez et gérez les comptes utilisateurs.
+              Créez et gérez uniquement les participants rattachés à votre espace.
             </p>
           </div>
           <div className="flex gap-2">
@@ -84,7 +84,7 @@ export default function AdminUsersPage() {
               className="inline-flex items-center gap-2 rounded-full bg-blue-500 px-4 py-1.5 text-xs font-semibold text-slate-950 shadow-md shadow-blue-500/40 hover:bg-blue-400"
             >
               <span aria-hidden>➕</span>
-              Nouvel utilisateur
+              Nouveau participant
             </Link>
             <Link
               href="/"
@@ -99,7 +99,7 @@ export default function AdminUsersPage() {
         {loading ? (
           <p className="mt-8 text-sm text-gray-500 dark:text-slate-300">Chargement&hellip;</p>
         ) : users.length === 0 ? (
-          <p className="mt-8 text-sm text-gray-500 dark:text-slate-300">Aucun utilisateur.</p>
+          <p className="mt-8 text-sm text-gray-500 dark:text-slate-300">Aucun participant dans votre espace.</p>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 shadow-lg shadow-gray-200 dark:shadow-slate-950/60">
             <table className="w-full text-left text-sm">

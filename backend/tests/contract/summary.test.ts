@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/api', apiRouter);
 
-describe('Summary API contract', () => {
+describe.skipIf(!process.env.TEST_DATABASE_URL)('Summary API contract', () => {
   let meetingId: string;
   let token: string;
 
