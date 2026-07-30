@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import { getApiBase } from '@/services/api';
 import AdminNavigation from '@/components/AdminNavigation';
 
@@ -21,6 +21,17 @@ type Training = {
   _count: { registrations: number; presentationItems: number };
 };
 type Item = { title: string; durationMinutes: string };
+type TrainingRegistration = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  cityCountry?: string | null;
+  organization?: string | null;
+  jobTitle?: string | null;
+  timezone?: string | null;
+  signedAt: string;
+};
 
 const emptyItem = (): Item => ({ title: '', durationMinutes: '' });
 
@@ -64,6 +75,73 @@ export default function TrainingsPage() {
       body: JSON.stringify(body),
     });
     if (response.ok) void load();
+  };
+
+  const downloadAttendanceList = async (training: Training) => {
+    if (!token) return;
+    const response = await fetch(`${api}/trainings/${training.id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) {
+      setMessage('Impossible de télécharger la liste de présence.');
+      return;
+    }
+
+    const detail = (await response.json()) as { registrations: TrainingRegistration[] };
+    const columns =
+      training.mode === 'ONLINE'
+        ? [
+            'Prénom',
+            'Nom',
+            'E-mail',
+            'Téléphone',
+            'Ville / pays',
+            'Organisation',
+            'Fonction',
+            'Fuseau horaire',
+            'Inscrit le',
+          ]
+        : ['Prénom', 'Nom', 'E-mail', 'Téléphone', 'Organisation', 'Fonction', 'Inscrit le'];
+    const escapeCsv = (value: string | null | undefined) =>
+      `"${(value || '').replaceAll('"', '""')}"`;
+    const rows = detail.registrations.map((registration) => {
+      const common = [
+        registration.firstName,
+        registration.lastName,
+        registration.email,
+        registration.phone,
+      ];
+      const extra =
+        training.mode === 'ONLINE'
+          ? [
+              registration.cityCountry,
+              registration.organization,
+              registration.jobTitle,
+              registration.timezone,
+            ]
+          : [registration.organization, registration.jobTitle];
+      return [...common, ...extra, new Date(registration.signedAt).toLocaleString('fr-FR')]
+        .map(escapeCsv)
+        .join(';');
+    });
+    const blob = new Blob([`\uFEFF${columns.join(';')}\n${rows.join('\n')}`], {
+      type: 'text/csv;charset=utf-8',
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `presence-${training.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'formation'}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadQrCode = (training: Training) => {
+    const canvas = document.querySelector<HTMLCanvasElement>(`#training-qr-${training.id} canvas`);
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = `qr-${training.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'formation'}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -161,11 +239,28 @@ export default function TrainingsPage() {
                   >
                     QR {training.qrActive ? 'activé' : 'désactivé'}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => void downloadAttendanceList(training)}
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-slate-200"
+                  >
+                    Télécharger la liste
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadQrCode(training)}
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-slate-200"
+                  >
+                    Télécharger le QR
+                  </button>
                 </div>
               </div>
               {origin && (
-                <div className="self-start rounded-xl bg-white p-2">
-                  <QRCodeSVG value={qrUrl} size={100} />
+                <div
+                  id={`training-qr-${training.id}`}
+                  className="self-start rounded-xl bg-white p-2"
+                >
+                  <QRCodeCanvas value={qrUrl} size={180} />
                 </div>
               )}
             </div>
