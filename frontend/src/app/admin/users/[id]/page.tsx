@@ -20,7 +20,7 @@ export default function AdminEditUserPage() {
   const id = params.id as string;
   const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState('');
-  const [role, setRole] = useState<'ADMIN' | 'PARTICIPANT'>('PARTICIPANT');
+  const role = 'PARTICIPANT';
   const [isActive, setIsActive] = useState(true);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -41,7 +41,6 @@ export default function AdminEditUserPage() {
         if (data) {
           setUser(data);
           setName(data.name ?? '');
-          setRole(data.role);
           setIsActive(data.isActive);
         }
       })
@@ -53,9 +52,8 @@ export default function AdminEditUserPage() {
     if (!token || !user) return;
     setLoading(true);
     setError('');
-    const body: { name?: string; role?: string; isActive?: boolean; password?: string } = {
+    const body: { name?: string; isActive?: boolean; password?: string } = {
       name: name.trim() || undefined,
-      role,
       isActive,
     };
     if (password.length) body.password = password;
@@ -132,13 +130,11 @@ export default function AdminEditUserPage() {
               <label className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-gray-700 dark:text-slate-200">
                 <span aria-hidden>🏷️</span> Rôle
               </label>
-              <select
+              <select disabled
                 value={role}
-                onChange={(e) => setRole(e.target.value as 'ADMIN' | 'PARTICIPANT')}
                 className="mt-1 w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-950/70 px-3 py-2 text-sm text-gray-800 dark:text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40"
               >
                 <option value="PARTICIPANT">Participant</option>
-                <option value="ADMIN">Admin</option>
               </select>
             </div>
             <div>

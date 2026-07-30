@@ -11,12 +11,10 @@ const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   name: z.string().max(200).optional(),
-  role: z.enum(['ADMIN', 'PARTICIPANT']),
 });
 
 const updateUserSchema = z.object({
   name: z.string().max(200).optional(),
-  role: z.enum(['ADMIN', 'PARTICIPANT']).optional(),
   isActive: z.boolean().optional(),
   password: z.string().min(8).optional(),
 });
@@ -27,7 +25,8 @@ usersRouter.use(authMiddleware(), requireAuth, requireAdmin);
 
 usersRouter.get('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const users = await userService.listUsers();
+    if (!req.user) return;
+    const users = await userService.listParticipantsForAdmin(req.user.sub);
     res.json(users);
   } catch (e) {
     next(e);
@@ -42,11 +41,12 @@ usersRouter.post('/', async (req: AuthRequest, res: Response, next: NextFunction
       res.status(409).json({ error: 'Conflict', message: 'Email already registered' });
       return;
     }
-    const user = await userService.createUser({
+    if (!req.user) return;
+    const user = await userService.createParticipant({
       email: body.email,
       password: body.password,
       name: body.name,
-      role: body.role as 'ADMIN' | 'PARTICIPANT',
+      managerId: req.user.sub,
     });
     res.status(201).json(user);
   } catch (e) {
@@ -60,7 +60,8 @@ usersRouter.post('/', async (req: AuthRequest, res: Response, next: NextFunction
 
 usersRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const user = await userService.getUserById(req.params.id);
+    if (!req.user) return;
+    const user = await userService.getParticipantForAdmin(req.params.id, req.user.sub);
     if (!user) {
       res.status(404).json({ error: 'Not Found' });
       return;
@@ -74,14 +75,14 @@ usersRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFuncti
 usersRouter.patch('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const body = updateUserSchema.parse(req.body);
-    const existing = await userService.getUserById(req.params.id);
+    if (!req.user) return;
+    const existing = await userService.getParticipantForAdmin(req.params.id, req.user.sub);
     if (!existing) {
       res.status(404).json({ error: 'Not Found' });
       return;
     }
     const user = await userService.updateUser(req.params.id, {
       name: body.name,
-      role: body.role as 'ADMIN' | 'PARTICIPANT' | undefined,
       isActive: body.isActive,
       password: body.password,
     });
@@ -97,7 +98,8 @@ usersRouter.patch('/:id', async (req: AuthRequest, res: Response, next: NextFunc
 
 usersRouter.delete('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const existing = await userService.getUserById(req.params.id);
+    if (!req.user) return;
+    const existing = await userService.getParticipantForAdmin(req.params.id, req.user.sub);
     if (!existing) {
       res.status(404).json({ error: 'Not Found' });
       return;
