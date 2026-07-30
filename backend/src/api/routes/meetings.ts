@@ -71,6 +71,11 @@ const addParticipantSchema = z.object({
   displayName: z.string().max(200).optional(),
 });
 
+const manualAttendanceSchema = z.object({
+  attendeeName: z.string().trim().min(1).max(200),
+  attendeeEmail: z.string().email().optional(),
+});
+
 const joinByQrSchema = z.object({
   qrToken: z.string().min(20).max(200),
 });
@@ -215,6 +220,35 @@ meetingsRouter.get(
       res.json(list);
     } catch (e) {
       next(e);
+    }
+  }
+);
+
+meetingsRouter.post(
+  '/:id/attendance/manual',
+  authMiddleware(),
+  requireAuth,
+  requireOrganizer,
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+      const body = manualAttendanceSchema.parse(req.body);
+      const meeting = await meetingService.getMeetingById(req.params.id);
+      if (!meeting) {
+        res.status(404).json({ error: 'Not Found' });
+        return;
+      }
+      const result = await attendanceService.recordScan({
+        meetingId: meeting.id,
+        attendeeName: body.attendeeName,
+        attendeeEmail: body.attendeeEmail,
+      });
+      res.status(201).json(result?.attendance);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ error: 'Bad Request', errors: error.flatten() });
+        return;
+      }
+      next(error);
     }
   }
 );

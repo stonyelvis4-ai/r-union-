@@ -37,7 +37,9 @@ export default function MeetingDetailPage() {
   const [error, setError] = useState('');
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [sendingReport, setSendingReport] = useState(false);
-  const [sendResult, setSendResult] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [sendResult, setSendResult] = useState<{ type: 'success' | 'error'; text: string } | null>(
+    null
+  );
   const [publicMeetingUrl, setPublicMeetingUrl] = useState('');
   const [isGuestView, setIsGuestView] = useState(false);
   const [presenceSubmitted, setPresenceSubmitted] = useState(false);
@@ -45,6 +47,10 @@ export default function MeetingDetailPage() {
   const [attendeeEmail, setAttendeeEmail] = useState('');
   const [presenceLoading, setPresenceLoading] = useState(false);
   const [presenceError, setPresenceError] = useState('');
+  const [manualAttendanceName, setManualAttendanceName] = useState('');
+  const [manualAttendanceEmail, setManualAttendanceEmail] = useState('');
+  const [manualAttendanceLoading, setManualAttendanceLoading] = useState(false);
+  const [manualAttendanceError, setManualAttendanceError] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [joinMessage, setJoinMessage] = useState('');
 
@@ -91,11 +97,15 @@ export default function MeetingDetailPage() {
           }
           const [meetingRes, attendanceRes, transcriptionRes, summaryRes] = await Promise.all([
             fetch(`${base}/meetings/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`${base}/meetings/${id}/attendance`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`${base}/meetings/${id}/transcription`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`${base}/meetings/${id}/summary`, { headers: { Authorization: `Bearer ${token}` } }).catch(
-              () => null
-            ),
+            fetch(`${base}/meetings/${id}/attendance`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch(`${base}/meetings/${id}/transcription`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            fetch(`${base}/meetings/${id}/summary`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }).catch(() => null),
           ]);
           if (!meetingRes.ok) throw new Error('Réunion introuvable');
           const meetingData = await meetingRes.json();
@@ -199,18 +209,26 @@ export default function MeetingDetailPage() {
               <span className="rounded-full bg-gray-100 dark:bg-slate-800/80 px-3 py-1">
                 📅 {new Date(meeting.date).toLocaleDateString('fr-FR')}
               </span>
-              <span className="rounded-full bg-gray-100 dark:bg-slate-800/80 px-3 py-1">⏰ {meeting.time}</span>
+              <span className="rounded-full bg-gray-100 dark:bg-slate-800/80 px-3 py-1">
+                ⏰ {meeting.time}
+              </span>
             </div>
           </section>
           <section className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-5">
-            <h2 className="text-sm font-semibold text-gray-800 dark:text-slate-100">Liste de présence</h2>
+            <h2 className="text-sm font-semibold text-gray-800 dark:text-slate-100">
+              Liste de présence
+            </h2>
             <p className="mt-1 text-xs text-gray-500 dark:text-slate-300">
               Inscrivez-vous pour marquer votre présence à cette réunion.
             </p>
             {presenceSubmitted ? (
               <div className="mt-4 rounded-xl border border-emerald-500/50 bg-emerald-50 dark:bg-emerald-950/40 p-4 text-center">
-                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-200">✓ Présence enregistrée</p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-slate-300">Merci, vous êtes inscrit sur la liste.</p>
+                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-200">
+                  ✓ Présence enregistrée
+                </p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-slate-300">
+                  Merci, vous êtes inscrit sur la liste.
+                </p>
               </div>
             ) : (
               <form
@@ -243,7 +261,10 @@ export default function MeetingDetailPage() {
                 }}
               >
                 <div>
-                  <label htmlFor="guest-name" className="block text-xs font-medium text-gray-500 dark:text-slate-300">
+                  <label
+                    htmlFor="guest-name"
+                    className="block text-xs font-medium text-gray-500 dark:text-slate-300"
+                  >
                     Nom (optionnel)
                   </label>
                   <input
@@ -256,7 +277,10 @@ export default function MeetingDetailPage() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="guest-email" className="block text-xs font-medium text-gray-500 dark:text-slate-300">
+                  <label
+                    htmlFor="guest-email"
+                    className="block text-xs font-medium text-gray-500 dark:text-slate-300"
+                  >
                     Email (recommandé)
                   </label>
                   <input
@@ -268,9 +292,7 @@ export default function MeetingDetailPage() {
                     className="mt-1 w-full rounded-xl border border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-950/70 px-3 py-2 text-sm text-gray-800 dark:text-slate-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 outline-none focus:border-sky-500"
                   />
                 </div>
-                {presenceError && (
-                  <p className="text-xs text-rose-300">{presenceError}</p>
-                )}
+                {presenceError && <p className="text-xs text-rose-300">{presenceError}</p>}
                 <button
                   type="submit"
                   disabled={presenceLoading}
@@ -363,7 +385,9 @@ export default function MeetingDetailPage() {
           </div>
           {meeting.agenda && (
             <div className="mt-4 rounded-xl border border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-900/80 p-3 text-sm text-gray-700 dark:text-slate-200">
-              <p className="mb-1 flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-slate-400"><span aria-hidden>📌</span> Ordre du jour</p>
+              <p className="mb-1 flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-slate-400">
+                <span aria-hidden>📌</span> Ordre du jour
+              </p>
               <p className="whitespace-pre-wrap">{meeting.agenda}</p>
             </div>
           )}
@@ -379,7 +403,9 @@ export default function MeetingDetailPage() {
           <div className="space-y-4">
             <div className="sr-tile rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4">
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100"><span aria-hidden>👥</span> Participants</h2>
+                <h2 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100">
+                  <span aria-hidden>👥</span> Participants
+                </h2>
                 <span className="text-[11px] text-gray-400 dark:text-slate-400">
                   {meeting.participants?.length || 0} inscrit(s)
                 </span>
@@ -399,19 +425,86 @@ export default function MeetingDetailPage() {
                   ))}
                 </ul>
               ) : (
-                <p className="text-xs text-gray-400 dark:text-slate-400">Aucun participant pour le moment.</p>
+                <p className="text-xs text-gray-400 dark:text-slate-400">
+                  Aucun participant pour le moment.
+                </p>
               )}
             </div>
 
             <div className="sr-tile rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4">
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100"><span aria-hidden>✅</span> Présences</h2>
+                <h2 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100">
+                  <span aria-hidden>✅</span> Présences
+                </h2>
                 <span className="rounded-full bg-gray-100 dark:bg-slate-800/80 px-2 py-0.5 text-[11px] text-sky-300">
                   {attendance.length} scan(s)
                 </span>
               </div>
+              {isAdmin && (
+                <form
+                  className="mb-4 grid gap-2 rounded-xl border border-sky-300/20 bg-sky-300/5 p-3 sm:grid-cols-[1fr_1fr_auto]"
+                  onSubmit={async (event) => {
+                    event.preventDefault();
+                    if (!token || !manualAttendanceName.trim()) return;
+                    setManualAttendanceLoading(true);
+                    setManualAttendanceError('');
+                    try {
+                      const response = await fetch(`${base}/meetings/${id}/attendance/manual`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                          attendeeName: manualAttendanceName.trim(),
+                          attendeeEmail: manualAttendanceEmail.trim() || undefined,
+                        }),
+                      });
+                      if (!response.ok) throw new Error('Impossible d’ajouter cette présence.');
+                      const record = await response.json();
+                      setAttendance((current) => [record, ...current]);
+                      setManualAttendanceName('');
+                      setManualAttendanceEmail('');
+                    } catch (manualError) {
+                      setManualAttendanceError(
+                        manualError instanceof Error
+                          ? manualError.message
+                          : 'Une erreur est survenue.'
+                      );
+                    } finally {
+                      setManualAttendanceLoading(false);
+                    }
+                  }}
+                >
+                  <input
+                    value={manualAttendanceName}
+                    onChange={(event) => setManualAttendanceName(event.target.value)}
+                    required
+                    placeholder="Nom du participant *"
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-slate-900"
+                  />
+                  <input
+                    value={manualAttendanceEmail}
+                    onChange={(event) => setManualAttendanceEmail(event.target.value)}
+                    type="email"
+                    placeholder="E-mail (facultatif)"
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs text-slate-900"
+                  />
+                  <button
+                    disabled={manualAttendanceLoading}
+                    className="rounded-lg bg-sky-300 px-3 py-2 text-xs font-bold text-slate-950 disabled:opacity-60"
+                  >
+                    {manualAttendanceLoading ? 'Ajout…' : 'Ajouter'}
+                  </button>
+                  {manualAttendanceError && (
+                    <p className="sm:col-span-3 text-xs text-rose-300">{manualAttendanceError}</p>
+                  )}
+                </form>
+              )}
               {attendance.length === 0 ? (
-                <p className="text-xs text-gray-400 dark:text-slate-400">Aucune présence enregistrée.</p>
+                <p className="text-xs text-gray-400 dark:text-slate-400">
+                  Aucune présence enregistrée.
+                </p>
               ) : (
                 <ul className="mt-1 space-y-1 text-xs text-gray-700 dark:text-slate-200">
                   {attendance.map((a) => (
@@ -425,14 +518,17 @@ export default function MeetingDetailPage() {
                 </ul>
               )}
             </div>
-
           </div>
 
           <div className="space-y-4">
             <div className="sr-tile rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4">
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100"><span aria-hidden>🎙️</span> Enregistrement</h2>
-                <span className="text-[11px] text-gray-400 dark:text-slate-400">Audio + transcription</span>
+                <h2 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100">
+                  <span aria-hidden>🎙️</span> Enregistrement
+                </h2>
+                <span className="text-[11px] text-gray-400 dark:text-slate-400">
+                  Audio + transcription
+                </span>
               </div>
               <RecordingControls
                 meetingId={id}
@@ -444,7 +540,11 @@ export default function MeetingDetailPage() {
                     .then((r) => r.ok && r.json())
                     .then(
                       (t) =>
-                        t && setTranscription({ status: t.status || 'pending', fullText: t.fullText ?? null })
+                        t &&
+                        setTranscription({
+                          status: t.status || 'pending',
+                          fullText: t.fullText ?? null,
+                        })
                     );
                 }}
               />
@@ -452,17 +552,19 @@ export default function MeetingDetailPage() {
 
             <div className="sr-tile rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-4">
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100"><span aria-hidden>📝</span> Transcription</h2>
+                <h2 className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100">
+                  <span aria-hidden>📝</span> Transcription
+                </h2>
                 <span className="text-[11px] text-gray-400 dark:text-slate-400">
                   {transcription?.status === 'complete'
                     ? transcription.fullText
                       ? 'Terminée'
                       : 'Non disponible'
                     : transcription?.status === 'failed'
-                    ? 'Erreur'
-                    : transcription?.status === 'pending'
-                    ? 'En cours'
-                    : 'Non démarrée'}
+                      ? 'Erreur'
+                      : transcription?.status === 'pending'
+                        ? 'En cours'
+                        : 'Non démarrée'}
                 </span>
               </div>
               {transcription?.status === 'complete' && transcription.fullText ? (
@@ -471,8 +573,8 @@ export default function MeetingDetailPage() {
                 </div>
               ) : transcription?.status === 'complete' && !transcription.fullText ? (
                 <p className="text-xs text-gray-500 dark:text-slate-300">
-                  La transcription automatique n'est pas disponible dans cette version de la
-                  démo. L'audio a bien été enregistré, mais aucun texte n'a été généré.
+                  La transcription automatique n'est pas disponible dans cette version de la démo.
+                  L'audio a bien été enregistré, mais aucun texte n'a été généré.
                 </p>
               ) : transcription?.status === 'failed' ? (
                 <p className="text-xs text-amber-300">
@@ -531,12 +633,15 @@ export default function MeetingDetailPage() {
                 <span aria-hidden>📨</span> Envoyer le compte-rendu
               </h2>
               <p className="text-xs text-gray-500 dark:text-slate-300">
-                Envoyer le rapport (avec PDF en pièce jointe) par email aux participants et aux personnes ayant scanné le QR code.
+                Envoyer le rapport (avec PDF en pièce jointe) par email aux participants et aux
+                personnes ayant scanné le QR code.
               </p>
 
               {(() => {
                 const emails = new Set<string>();
-                meeting.participants?.forEach((p) => { if (p.email) emails.add(p.email); });
+                meeting.participants?.forEach((p) => {
+                  if (p.email) emails.add(p.email);
+                });
                 attendance.forEach((a) => {
                   if (a.user?.email) emails.add(a.user.email);
                   if (a.attendeeEmail) emails.add(a.attendeeEmail);
@@ -551,7 +656,10 @@ export default function MeetingDetailPage() {
                         </p>
                         <ul className="flex flex-wrap gap-2">
                           {list.map((e) => (
-                            <li key={e} className="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-slate-800 px-2.5 py-1 text-[11px] text-gray-700 dark:text-slate-200">
+                            <li
+                              key={e}
+                              className="inline-flex items-center gap-1 rounded-full bg-gray-200 dark:bg-slate-800 px-2.5 py-1 text-[11px] text-gray-700 dark:text-slate-200"
+                            >
                               <span aria-hidden>📧</span> {e}
                             </li>
                           ))}
@@ -559,12 +667,15 @@ export default function MeetingDetailPage() {
                       </div>
                     ) : (
                       <p className="mt-3 text-xs text-amber-500">
-                        Aucun destinataire trouvé. Ajoutez des participants ou attendez que des personnes scannent le QR code.
+                        Aucun destinataire trouvé. Ajoutez des participants ou attendez que des
+                        personnes scannent le QR code.
                       </p>
                     )}
 
                     {sendResult && (
-                      <p className={`mt-3 text-xs font-medium ${sendResult.type === 'success' ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'}`}>
+                      <p
+                        className={`mt-3 text-xs font-medium ${sendResult.type === 'success' ? 'text-emerald-600 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-300'}`}
+                      >
                         {sendResult.text}
                       </p>
                     )}
@@ -581,10 +692,17 @@ export default function MeetingDetailPage() {
                             headers: { Authorization: `Bearer ${token}` },
                           });
                           if (res.ok || res.status === 204) {
-                            setSendResult({ type: 'success', text: `Compte-rendu envoyé avec succès à ${list.length} destinataire(s).` });
+                            setSendResult({
+                              type: 'success',
+                              text: `Compte-rendu envoyé avec succès à ${list.length} destinataire(s).`,
+                            });
                           } else {
                             const data = await res.json().catch(() => ({}));
-                            setSendResult({ type: 'error', text: (data as { message?: string }).message || 'Erreur lors de l\'envoi.' });
+                            setSendResult({
+                              type: 'error',
+                              text:
+                                (data as { message?: string }).message || "Erreur lors de l'envoi.",
+                            });
                           }
                         } catch {
                           setSendResult({ type: 'error', text: 'Erreur réseau.' });
@@ -603,59 +721,66 @@ export default function MeetingDetailPage() {
             </div>
           )}
 
-          {isAdmin && <div className="sr-tile rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-5 shadow-lg shadow-gray-200 dark:shadow-slate-950/60">
-            <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100">
-              <span aria-hidden>📱</span> QR Code de la réunion
-            </h2>
-            <p className="text-xs text-gray-500 dark:text-slate-300">
-              Les participants peuvent scanner ce code pour accéder à la page de la réunion et marquer leur présence.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-4">
-              {publicMeetingUrl ? (
-                <div className="flex flex-col items-center gap-2">
-                  <div className="rounded-xl bg-white p-3 shadow-md shadow-gray-200 dark:shadow-slate-950/50">
-                    <QRCodeCanvas
-                      id="meeting-qr"
-                      value={publicMeetingUrl}
-                      size={160}
-                      bgColor="#ffffff"
-                      fgColor="#0f172a"
-                    />
+          {isAdmin && (
+            <div className="sr-tile rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/80 p-5 shadow-lg shadow-gray-200 dark:shadow-slate-950/60">
+              <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-gray-800 dark:text-slate-100">
+                <span aria-hidden>📱</span> QR Code de la réunion
+              </h2>
+              <p className="text-xs text-gray-500 dark:text-slate-300">
+                Les participants peuvent scanner ce code pour accéder à la page de la réunion et
+                marquer leur présence.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-4">
+                {publicMeetingUrl ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="rounded-xl bg-white p-3 shadow-md shadow-gray-200 dark:shadow-slate-950/50">
+                      <QRCodeCanvas
+                        id="meeting-qr"
+                        value={publicMeetingUrl}
+                        size={160}
+                        bgColor="#ffffff"
+                        fgColor="#0f172a"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const canvas = document.getElementById(
+                          'meeting-qr'
+                        ) as HTMLCanvasElement | null;
+                        if (!canvas) return;
+                        const url = canvas.toDataURL('image/png');
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `reunion-${meeting.id.slice(0, 8)}-qr.png`;
+                        a.click();
+                      }}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-blue-500/40 hover:bg-blue-400"
+                    >
+                      <span aria-hidden>⬇️</span> Télécharger l'image
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const canvas = document.getElementById('meeting-qr') as HTMLCanvasElement | null;
-                      if (!canvas) return;
-                      const url = canvas.toDataURL('image/png');
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `reunion-${meeting.id.slice(0, 8)}-qr.png`;
-                      a.click();
-                    }}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-blue-500 px-3 py-1.5 text-xs font-semibold text-white shadow-sm shadow-blue-500/40 hover:bg-blue-400"
-                  >
-                    <span aria-hidden>⬇️</span> Télécharger l'image
-                  </button>
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400 dark:text-slate-400">Chargement du QR code…</p>
-              )}
-              {publicMeetingUrl && (
-                <div className="text-xs text-gray-500 dark:text-slate-300">
-                  <p>Lien de la réunion :</p>
-                  <a
-                    href={publicMeetingUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-1 inline-block break-all text-sky-500 hover:text-sky-400 hover:underline"
-                  >
-                    {publicMeetingUrl}
-                  </a>
-                </div>
-              )}
+                ) : (
+                  <p className="text-xs text-gray-400 dark:text-slate-400">
+                    Chargement du QR code…
+                  </p>
+                )}
+                {publicMeetingUrl && (
+                  <div className="text-xs text-gray-500 dark:text-slate-300">
+                    <p>Lien de la réunion :</p>
+                    <a
+                      href={publicMeetingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 inline-block break-all text-sky-500 hover:text-sky-400 hover:underline"
+                    >
+                      {publicMeetingUrl}
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>}
+          )}
         </section>
       </div>
     </div>
