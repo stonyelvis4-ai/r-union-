@@ -32,6 +32,7 @@ export default function TrainingsPage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [origin, setOrigin] = useState('');
+  const [creationOpen, setCreationOpen] = useState(false);
 
   const api = getApiBase();
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
@@ -97,6 +98,7 @@ export default function TrainingsPage() {
       event.currentTarget.reset();
       setItems([emptyItem()]);
       setMode('PRESENTIAL');
+      setCreationOpen(false);
       setMessage('Formation créée. Publiez-la pour activer son QR code.');
       await load();
     } catch (error) {
@@ -167,7 +169,9 @@ export default function TrainingsPage() {
                 </div>
               )}
             </div>
-            <p className="mt-3 break-all text-[11px] text-slate-500">{qrUrl}</p>
+            <p className="mt-3 text-xs text-slate-500">
+              Ce QR code ouvre le formulaire d’inscription sécurisé.
+            </p>
           </article>
         );
       }),
@@ -188,14 +192,48 @@ export default function TrainingsPage() {
               Créez les séances, la liste de présentation et le QR d'inscription privé.
             </p>
           </div>
-          <Link
-            href="/dashboard"
-            className="text-sm font-semibold text-cyan-200 hover:text-cyan-100"
+          <button
+            type="button"
+            onClick={() => setCreationOpen((open) => !open)}
+            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan-300 px-4 text-sm font-bold text-slate-950 transition hover:bg-cyan-200"
           >
-            ← Tableau de bord
-          </Link>
+            {creationOpen ? 'Fermer' : 'Nouvelle formation'}
+          </button>
         </header>
-        <section className="rounded-2xl border border-white/10 bg-slate-900/80 p-4 shadow-xl shadow-black/20 sm:p-6">
+        <section className="mb-7 grid gap-5 rounded-2xl border border-white/10 bg-slate-900/75 p-5 shadow-2xl shadow-black/15 sm:grid-cols-3 sm:gap-0 sm:p-6">
+          <article className="border-l border-white/10 px-4 first:border-l-0 first:pl-0 sm:px-6">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+              Formations
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-white">{trainings.length}</p>
+            <p className="mt-1 text-xs text-slate-400">programmes créés</p>
+          </article>
+          <article className="border-l border-white/10 px-4 sm:px-6">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+              Publiées
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-white">
+              {trainings.filter((training) => training.status === 'PUBLISHED').length}
+            </p>
+            <p className="mt-1 text-xs text-slate-400">QR disponibles</p>
+          </article>
+          <article className="border-l border-white/10 px-4 sm:px-6">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+              Inscriptions
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-white">
+              {trainings.reduce((total, training) => total + training._count.registrations, 0)}
+            </p>
+            <p className="mt-1 text-xs text-slate-400">participants inscrits</p>
+          </article>
+        </section>
+        <section
+          className={
+            creationOpen
+              ? 'rounded-2xl border border-white/10 bg-slate-900/80 p-4 shadow-xl shadow-black/20 sm:p-6'
+              : 'hidden'
+          }
+        >
           <h2 className="text-xl font-bold">Nouvelle formation</h2>
           <form onSubmit={submit} className="mt-5 grid gap-4 md:grid-cols-2">
             <label className="md:col-span-2">
