@@ -32,6 +32,14 @@ type TrainingRegistration = {
   timezone?: string | null;
   signedAt: string;
 };
+type PresentationItem = {
+  title: string;
+  description?: string | null;
+  durationMinutes?: number | null;
+};
+type TrainingDetail = {
+  presentationItems: PresentationItem[];
+};
 
 const emptyItem = (): Item => ({ title: '', durationMinutes: '' });
 
@@ -144,6 +152,112 @@ export default function TrainingsPage() {
     link.click();
   };
 
+  const getPresentation = async (training: Training) => {
+    if (!token) return null;
+    const response = await fetch(`${api}/trainings/${training.id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.ok) {
+      setMessage('Impossible de récupérer la liste de présentation.');
+      return null;
+    }
+    return (await response.json()) as TrainingDetail;
+  };
+
+  const presentationFilename = (training: Training, extension: string) =>
+    `presentation-${training.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase() || 'formation'}.${extension}`;
+
+  const downloadPresentationPdf = async (training: Training) => {
+    const detail = await getPresentation(training);
+    if (!detail) return;
+    const { jsPDF } = await import('jspdf');
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageHeight = 287;
+    let cursorY = 20;
+    const addText = (text: string, size = 11, bold = false) => {
+      pdf.setFont('helvetica', bold ? 'bold' : 'normal');
+      pdf.setFontSize(size);
+      const lines = pdf.splitTextToSize(text, 170) as string[];
+      if (cursorY + lines.length * (size * 0.5) > pageHeight) {
+        pdf.addPage();
+        cursorY = 20;
+      }
+      pdf.text(lines, 20, cursorY);
+      cursorY += lines.length * (size * 0.5) + 4;
+    };
+
+    addText(training.title, 20, true);
+    addText(
+      `Liste de présentation - ${training.mode === 'PRESENTIAL' ? 'Présentiel' : 'En ligne'}`,
+      12
+    );
+    addText(
+      `${new Date(training.date).toLocaleDateString('fr-FR')} à ${training.time}${training.trainer ? ` - Formateur : ${training.trainer}` : ''}${training.location ? ` - Lieu : ${training.location}` : ''}`
+    );
+    cursorY += 4;
+    if (detail.presentationItems.length === 0) {
+      addText('Aucune étape de présentation renseignée.');
+    } else {
+      detail.presentationItems.forEach((item, index) => {
+        const duration = item.durationMinutes ? ` (${item.durationMinutes} min)` : '';
+        addText(`${index + 1}. ${item.title}${duration}`, 12, true);
+        if (item.description) addText(item.description);
+      });
+    }
+    pdf.save(presentationFilename(training, 'pdf'));
+  };
+
+  const downloadPresentationWord = async (training: Training) => {
+    const detail = await getPresentation(training);
+    if (!detail) return;
+    const { Document, HeadingLevel, Packer, Paragraph, TextRun } = await import('docx');
+    const metadata = `${new Date(training.date).toLocaleDateString('fr-FR')} à ${training.time}${training.trainer ? ` - Formateur : ${training.trainer}` : ''}${training.location ? ` - Lieu : ${training.location}` : ''}`;
+    const wordDocument = new Document({
+      numbering: {
+        config: [
+          {
+            reference: 'presentation-list',
+            levels: [{ level: 0, format: 'decimal', text: '%1.', alignment: 'start' }],
+          },
+        ],
+      },
+      sections: [
+        {
+          properties: {},
+          children: [
+            new Paragraph({ text: training.title, heading: HeadingLevel.TITLE }),
+            new Paragraph({
+              text: `Liste de présentation - ${training.mode === 'PRESENTIAL' ? 'Présentiel' : 'En ligne'}`,
+              heading: HeadingLevel.HEADING_1,
+            }),
+            new Paragraph({ text: metadata }),
+            ...(detail.presentationItems.length
+              ? detail.presentationItems.flatMap((item) => [
+                  new Paragraph({
+                    numbering: { reference: 'presentation-list', level: 0 },
+                    children: [
+                      new TextRun({
+                        text: `${item.title}${item.durationMinutes ? ` (${item.durationMinutes} min)` : ''}`,
+                        bold: true,
+                      }),
+                    ],
+                  }),
+                  ...(item.description ? [new Paragraph({ text: item.description })] : []),
+                ])
+              : [new Paragraph({ text: 'Aucune étape de présentation renseignée.' })]),
+          ],
+        },
+      ],
+    });
+    const blob = await Packer.toBlob(wordDocument);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = presentationFilename(training, 'docx');
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!token) return;
@@ -252,6 +366,20 @@ export default function TrainingsPage() {
                     className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-slate-200"
                   >
                     Télécharger le QR
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void downloadPresentationPdf(training)}
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-slate-200"
+                  >
+                    Présentation PDF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void downloadPresentationWord(training)}
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-slate-200"
+                  >
+                    Présentation Word
                   </button>
                 </div>
               </div>
