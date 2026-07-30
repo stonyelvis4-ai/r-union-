@@ -39,7 +39,7 @@ export default function RegisterPage() {
       if (typeof window !== 'undefined' && data.token) {
         localStorage.setItem('token', data.token);
       }
-      router.push('/meetings');
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur');
     } finally {

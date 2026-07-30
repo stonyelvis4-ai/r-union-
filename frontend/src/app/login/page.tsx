@@ -31,7 +31,7 @@ export default function LoginPage() {
       }
       const { token } = await res.json();
       if (typeof window !== 'undefined') localStorage.setItem('token', token);
-      router.push('/meetings');
+      router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur');
     } finally {

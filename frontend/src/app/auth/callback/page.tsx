@@ -40,7 +40,7 @@ export default function GoogleAuthCallbackPage() {
       }
 
       localStorage.setItem('token', payload.token);
-      router.replace('/meetings');
+      router.replace('/dashboard');
     }
 
     void finishGoogleSignIn();
