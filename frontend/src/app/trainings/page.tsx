@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import { getApiBase } from '@/services/api';
+import AdminNavigation from '@/components/AdminNavigation';
 
 type Mode = 'PRESENTIAL' | 'ONLINE';
 type Training = {
@@ -176,6 +177,7 @@ export default function TrainingsPage() {
   return (
     <main className="sr-grid min-h-screen bg-slate-950 px-4 pb-12 pt-5 text-slate-50 sm:px-6 sm:pt-7">
       <div className="mx-auto max-w-6xl">
+        <AdminNavigation />
         <header className="mb-7 flex flex-col gap-3 border-b border-white/10 pb-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getApiBase } from '@/services/api';
+import AdminNavigation from '@/components/AdminNavigation';
 
 type Status = 'DRAFT' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
 
@@ -124,6 +125,7 @@ export default function DashboardPage() {
   return (
     <main className="sr-grid min-h-screen bg-slate-950 px-4 pb-12 pt-5 text-slate-50 sm:px-6 sm:pt-7">
       <div className="mx-auto max-w-6xl">
+        <AdminNavigation />
         <header className="mb-7 flex flex-col gap-4 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-cyan-300">

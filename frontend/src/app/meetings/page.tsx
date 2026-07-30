@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getApiBase } from '@/services/api';
 import type { Meeting } from '@/services/api';
 import SearchFilters, { type SearchFiltersState } from '@/components/SearchFilters';
+import AdminNavigation from '@/components/AdminNavigation';
 
 const defaultFilters: SearchFiltersState = {
   q: '',
@@ -94,50 +95,57 @@ export default function MeetingsPage() {
   return (
     <div className="sr-grid min-h-screen bg-slate-950 px-4 pb-12 pt-5 text-slate-50 sm:px-6 sm:pt-6">
       <div className="mx-auto max-w-6xl">
+        {isAdmin && <AdminNavigation />}
         <header className="mb-7 flex flex-col gap-4 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
           <div className="w-full md:w-auto">
             <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight md:text-3xl">
-              <span aria-hidden className="text-sky-400">📋</span>
+              <span aria-hidden className="text-sky-400">
+                📋
+              </span>
               Mes réunions
             </h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-slate-300">
               Visualisez, filtrez et créez vos réunions en temps réel.
             </p>
           </div>
-          {isAdmin && <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
-            <Link
-              href="/dashboard"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
-            >
-              Tableau de bord
-            </Link>
-            <Link
-              href="/meetings/new"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200 md:w-auto md:py-2.5"
-            >
-              <span aria-hidden className="text-[13px]">➕</span>
-              Nouvelle réunion
-            </Link>
-          </div>}
+          {isAdmin && (
+            <div className="flex w-full flex-wrap gap-2 md:w-auto md:justify-end">
+              <Link
+                href="/dashboard"
+                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
+              >
+                Tableau de bord
+              </Link>
+              <Link
+                href="/meetings/new"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-cyan-500/20 transition hover:-translate-y-0.5 hover:bg-cyan-200 md:w-auto md:py-2.5"
+              >
+                <span aria-hidden className="text-[13px]">
+                  ➕
+                </span>
+                Nouvelle réunion
+              </Link>
+            </div>
+          )}
         </header>
 
         {token && isAdmin && (
-        <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.035] p-1.5 backdrop-blur-xl">
-          <SearchFilters
-            value={filters}
-            onChange={setFilters}
-            onSearch={runSearch}
-            loading={searchLoading}
-          />
-          {useSearch && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="mt-2 text-sm text-blue-600 hover:underline"
-            >
-              Afficher toutes mes réunions
-            </button>
-          )}
+          <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.035] p-1.5 backdrop-blur-xl">
+            <SearchFilters
+              value={filters}
+              onChange={setFilters}
+              onSearch={runSearch}
+              loading={searchLoading}
+            />
+            {useSearch && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="mt-2 text-sm text-blue-600 hover:underline"
+              >
+                Afficher toutes mes réunions
+              </button>
+            )}
           </div>
         )}
         {loading ? (
@@ -158,7 +166,9 @@ export default function MeetingsPage() {
                   href={`/meetings/${m.id}`}
                   className="relative flex min-h-11 items-center gap-2 text-base font-semibold text-white transition hover:text-cyan-200"
                 >
-                  <span aria-hidden className="text-base">🗓️</span>
+                  <span aria-hidden className="text-base">
+                    🗓️
+                  </span>
                   {m.title}
                 </Link>
                 <p className="relative mt-2 text-sm text-slate-400">
@@ -168,7 +178,9 @@ export default function MeetingsPage() {
                   </span>
                   {(m as Meeting & { owner?: { name?: string; email: string } }).owner && (
                     <span className="ml-2 text-gray-400 dark:text-slate-500">
-                      par {(m as Meeting & { owner?: { name?: string; email: string } }).owner!.name || (m as Meeting & { owner?: { name?: string; email: string } }).owner!.email}
+                      par{' '}
+                      {(m as Meeting & { owner?: { name?: string; email: string } }).owner!.name ||
+                        (m as Meeting & { owner?: { name?: string; email: string } }).owner!.email}
                     </span>
                   )}
                 </p>
