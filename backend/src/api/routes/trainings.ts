@@ -52,3 +52,11 @@ trainingsRouter.post('/', async (req, res: Response, next: NextFunction) => { tr
 trainingsRouter.get('/:id', async (req, res: Response, next: NextFunction) => { try { const training = await trainingService.getTraining(req.params.id); if (!training) return res.status(404).json({ error: 'Not Found' }); res.json(training); } catch (error) { next(error); } });
 trainingsRouter.patch('/:id/qr', async (req, res: Response, next: NextFunction) => { try { const body = z.object({ qrActive: z.boolean() }).parse(req.body); res.json(await trainingService.setQrActive(req.params.id, body.qrActive)); } catch (error) { next(error); } });
 trainingsRouter.patch('/:id/status', async (req, res: Response, next: NextFunction) => { try { const body = z.object({ status: z.enum(['DRAFT', 'PUBLISHED', 'COMPLETED', 'CANCELLED']) }).parse(req.body); res.json(await trainingService.updateTrainingStatus(req.params.id, body.status)); } catch (error) { next(error); } });
+trainingsRouter.delete('/:id', async (req, res: Response, next: NextFunction) => {
+  try {
+    await trainingService.deleteTraining(req.params.id);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+});

@@ -85,6 +85,25 @@ export default function TrainingsPage() {
     if (response.ok) void load();
   };
 
+  const deleteTraining = async (training: Training) => {
+    if (!token) return;
+    const confirmed = window.confirm(
+      `Supprimer définitivement la formation « ${training.title} » ? Les inscriptions et la liste de présentation seront aussi supprimées.`
+    );
+    if (!confirmed) return;
+
+    const response = await fetch(`${api}/trainings/${training.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      setTrainings((current) => current.filter((item) => item.id !== training.id));
+      setMessage('Formation supprimée.');
+    } else {
+      setMessage('Impossible de supprimer cette formation.');
+    }
+  };
+
   const downloadAttendanceList = async (training: Training) => {
     if (!token) return;
     const response = await fetch(`${api}/trainings/${training.id}`, {
@@ -380,6 +399,13 @@ export default function TrainingsPage() {
                     className="rounded-lg border border-white/10 px-3 py-2 text-xs font-semibold text-slate-200"
                   >
                     Présentation Word
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void deleteTraining(training)}
+                    className="rounded-lg border border-rose-400/40 px-3 py-2 text-xs font-semibold text-rose-200 transition hover:bg-rose-500/10"
+                  >
+                    Supprimer
                   </button>
                 </div>
               </div>

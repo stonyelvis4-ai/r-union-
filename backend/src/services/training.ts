@@ -66,6 +66,11 @@ export async function updateTrainingStatus(id: string, status: TrainingStatus) {
   return prisma.training.update({ where: { id }, data: { status } });
 }
 
+/** Supprime une formation et ses listes associées (inscriptions et étapes). */
+export async function deleteTraining(id: string) {
+  return prisma.training.delete({ where: { id } });
+}
+
 export async function registerForTraining(input: {
   trainingId: string;
   qrToken: string;
