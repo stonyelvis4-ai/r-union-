@@ -111,7 +111,7 @@ export default function DashboardPage() {
         <header className="mb-7 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm capitalize text-cyan-200">{today}</p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-white sm:text-5xl">
               Bonjour, administrateur
             </h1>
             <p className="mt-2 text-sm text-slate-400">Voici l’essentiel de votre activité.</p>
@@ -120,14 +120,11 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => void loadDashboard()}
-              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 px-3 text-sm font-semibold text-slate-300 transition hover:bg-white/5"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-3 text-sm font-semibold text-slate-300 transition hover:bg-white/[0.08]"
             >
               Actualiser
             </button>
-            <Link
-              href="/meetings/new"
-              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan-300 px-4 text-sm font-bold text-slate-950 transition hover:bg-cyan-200"
-            >
+            <Link href="/meetings/new" className="sr-button-primary">
               Nouvelle réunion
             </Link>
           </div>
@@ -149,7 +146,7 @@ export default function DashboardPage() {
         ) : data ? (
           <>
             <section
-              className="grid gap-5 rounded-2xl border border-white/10 bg-slate-900/75 p-5 shadow-2xl shadow-black/15 sm:grid-cols-3 sm:gap-0 sm:p-6"
+              className="sr-panel grid gap-5 p-5 sm:grid-cols-3 sm:gap-0 sm:p-7"
               aria-label="Indicateurs clés"
             >
               <Stat
@@ -170,7 +167,7 @@ export default function DashboardPage() {
             </section>
 
             <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(18rem,0.8fr)]">
-              <section className="rounded-2xl border border-white/10 bg-slate-900/75 p-5 shadow-xl shadow-black/10">
+              <section className="sr-panel p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-200">
@@ -224,7 +221,7 @@ export default function DashboardPage() {
                 )}
               </section>
 
-              <aside className="rounded-2xl border border-white/10 bg-white/[0.035] p-5">
+              <aside className="sr-panel bg-slate-900/55 p-5 sm:p-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-200">
                   À faire
                 </p>
@@ -263,7 +260,7 @@ export default function DashboardPage() {
               </aside>
             </section>
 
-            <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/60 p-5">
+            <section className="sr-panel mt-6 bg-slate-900/60 p-5 sm:p-6">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
