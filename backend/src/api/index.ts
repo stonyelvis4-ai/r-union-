@@ -7,6 +7,7 @@ import { summaryRouter } from './routes/summary.js';
 import { usersRouter } from './routes/users.js';
 import { dashboardRouter } from './routes/dashboard.js';
 import { trainingsRouter } from './routes/trainings.js';
+import { settingsRouter } from './routes/settings.js';
 import { errorHandler } from './errorHandler.js';
 import { rateLimit } from './middleware/rateLimit.js';
 
@@ -25,5 +26,6 @@ apiRouter.use(summaryRouter);
 apiRouter.use('/users', usersRouter);
 apiRouter.use('/dashboard', dashboardRouter);
 apiRouter.use('/trainings', trainingsRouter);
+apiRouter.use('/settings', settingsRouter);
 
 apiRouter.use(errorHandler);

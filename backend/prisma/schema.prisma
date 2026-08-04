@@ -11,6 +11,7 @@ model User {
   id           String   @id @default(cuid())
   email        String   @unique
   name         String?
+  avatarUrl    String?  @map("avatar_url")
   passwordHash String   @map("password_hash")
   role         Role     @default(PARTICIPANT)
   isActive     Boolean  @default(true) @map("is_active")
@@ -22,8 +23,34 @@ model User {
   attendances   Attendance[] @relation("AttendanceUser")
   manager       User?        @relation("AdminParticipants", fields: [managerId], references: [id], onDelete: SetNull)
   participantsManaged User[] @relation("AdminParticipants")
+  adminSettings AdminSettings?
 
   @@index([managerId])
+}
+
+model AdminSettings {
+  id                           String   @id @default(cuid())
+  userId                       String   @unique @map("user_id")
+  organizationName             String?  @map("organization_name")
+  organizationLogoUrl          String?  @map("organization_logo_url")
+  country                      String?
+  city                         String?
+  timezone                     String   @default("Africa/Abidjan")
+  defaultMeetingDuration       Int      @default(60) @map("default_meeting_duration")
+  defaultLocation              String?  @map("default_location")
+  defaultOnlineUrl             String?  @map("default_online_url")
+  qrEnabled                    Boolean  @default(true) @map("qr_enabled")
+  confirmationEmailsEnabled    Boolean  @default(true) @map("confirmation_emails_enabled")
+  remindersEnabled             Boolean  @default(true) @map("reminders_enabled")
+  adminNotificationsEnabled    Boolean  @default(true) @map("admin_notifications_enabled")
+  publicRegistrationEnabled    Boolean  @default(true) @map("public_registration_enabled")
+  signatureRequired            Boolean  @default(true) @map("signature_required")
+  phoneRequired                Boolean  @default(false) @map("phone_required")
+  autoExportAttendanceEnabled  Boolean  @default(false) @map("auto_export_attendance_enabled")
+  createdAt                    DateTime @default(now()) @map("created_at")
+  updatedAt                    DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Training {

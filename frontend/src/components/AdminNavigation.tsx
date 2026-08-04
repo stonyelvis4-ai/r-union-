@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const links = [
+  { href: '/settings', label: 'Réglages', icon: '⚙' },
   { href: '/dashboard', label: 'Dashboard', icon: '▦' },
   { href: '/meetings', label: 'Réunions', icon: '◷' },
   { href: '/trainings', label: 'Formations', icon: '▣' },
