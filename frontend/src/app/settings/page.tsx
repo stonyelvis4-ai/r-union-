@@ -76,6 +76,10 @@ export default function SettingsPage() {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(passwords),
     });
+    if (r.ok) {
+      const payload = (await r.json()) as { token: string };
+      localStorage.setItem('token', payload.token);
+    }
     setMessage(
       r.ok
         ? 'Mot de passe modifié.'

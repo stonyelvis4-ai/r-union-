@@ -12,9 +12,10 @@ dashboardRouter.get(
   authMiddleware(),
   requireAuth,
   requireAdmin,
-  async (_req: AuthRequest, res: Response, next: NextFunction) => {
+  async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      res.json(await getAdminDashboard());
+      if (!req.user) return;
+      res.json(await getAdminDashboard(req.user.sub));
     } catch (error) {
       next(error);
     }

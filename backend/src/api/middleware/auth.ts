@@ -1,13 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, type JwtPayload } from '../../services/auth.js';
 import { getEnv } from '../../config/env.js';
+import { prisma } from '../../lib/prisma.js';
 
 export interface AuthRequest extends Request {
   user?: JwtPayload;
 }
 
 export function authMiddleware(optional = false) {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return async (req: AuthRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
@@ -30,7 +31,16 @@ export function authMiddleware(optional = false) {
       return;
     }
 
-    req.user = payload;
-    next();
+    try {
+      const user = await prisma.user.findUnique({ where: { id: payload.sub }, select: { isActive: true, tokenVersion: true } });
+      if (!user || !user.isActive || (payload.version ?? 0) !== user.tokenVersion) {
+        res.status(401).json({ error: 'Unauthorized', message: 'Session expired' });
+        return;
+      }
+      req.user = payload;
+      next();
+    } catch (error) {
+      next(error);
+    }
   };
 }

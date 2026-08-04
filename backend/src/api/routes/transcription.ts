@@ -19,6 +19,10 @@ transcriptionRouter.get(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
+      if (meeting.ownerId !== req.user!.sub) {
+        res.status(403).json({ error: 'Forbidden' });
+        return;
+      }
       const transcription = await transcriptionService.getTranscription(req.params.id);
       if (!transcription) {
         res.json({ status: 'pending', fullText: null });
@@ -43,7 +47,7 @@ transcriptionRouter.post(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
-      if (meeting.ownerId !== req.user!.sub && req.user!.role !== 'ADMIN') {
+      if (meeting.ownerId !== req.user!.sub) {
         res.status(403).json({ error: 'Forbidden' });
         return;
       }

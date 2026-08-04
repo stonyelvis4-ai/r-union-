@@ -49,7 +49,7 @@ authRouter.post('/register', async (req: Request, res: Response, next: NextFunct
       return;
     }
     const token = issueToken(
-      { sub: user.id, email: user.email, role: user.role },
+      { sub: user.id, email: user.email, role: user.role, version: user.tokenVersion },
       secret
     );
 
@@ -90,7 +90,7 @@ authRouter.post('/login', async (req: Request, res: Response, next: NextFunction
       return;
     }
     const token = issueToken(
-      { sub: user.id, email: user.email, role: user.role },
+      { sub: user.id, email: user.email, role: user.role, version: user.tokenVersion },
       secret
     );
     res.json({
@@ -152,7 +152,7 @@ authRouter.post('/google', async (req: Request, res: Response, next: NextFunctio
       return;
     }
 
-    const token = issueToken({ sub: user.id, email: user.email, role: user.role }, env.JWT_SECRET);
+    const token = issueToken({ sub: user.id, email: user.email, role: user.role, version: user.tokenVersion }, env.JWT_SECRET);
     res.json({
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
       token,

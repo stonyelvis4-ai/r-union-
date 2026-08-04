@@ -92,7 +92,7 @@ meetingsRouter.get(
     try {
       if (!req.user) return;
       const meetings = req.user.role === 'ADMIN'
-        ? await meetingService.listAllMeetings()
+        ? await meetingService.listMeetingsByOwner(req.user.sub)
         : await meetingService.listMeetingsForParticipant(req.user.email);
       res.json(meetings);
     } catch (e) {
@@ -134,6 +134,10 @@ meetingsRouter.get(
       const meeting = await meetingService.getMeetingById(req.params.id);
       if (!meeting) {
         res.status(404).json({ error: 'Not Found' });
+        return;
+      }
+      if (req.user!.role === 'ADMIN' && meeting.ownerId !== req.user!.sub) {
+        res.status(403).json({ error: 'Forbidden' });
         return;
       }
       if (req.user!.role !== 'ADMIN' && !(await meetingService.isParticipantOfMeeting(meeting.id, req.user!.email))) {
@@ -212,7 +216,7 @@ meetingsRouter.get(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
-      if (meeting.ownerId !== req.user!.sub && req.user!.role !== 'ADMIN') {
+      if (meeting.ownerId !== req.user!.sub) {
         res.status(403).json({ error: 'Forbidden' });
         return;
       }
@@ -235,6 +239,10 @@ meetingsRouter.post(
       const meeting = await meetingService.getMeetingById(req.params.id);
       if (!meeting) {
         res.status(404).json({ error: 'Not Found' });
+        return;
+      }
+      if (meeting.ownerId !== req.user!.sub) {
+        res.status(403).json({ error: 'Forbidden' });
         return;
       }
       const result = await attendanceService.recordScan({
@@ -265,7 +273,7 @@ meetingsRouter.patch(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
-      if (meeting.ownerId !== req.user!.sub && req.user!.role !== 'ADMIN') {
+      if (meeting.ownerId !== req.user!.sub) {
         res.status(403).json({ error: 'Forbidden', message: 'Not the meeting owner' });
         return;
       }
@@ -297,7 +305,7 @@ meetingsRouter.delete(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
-      if (meeting.ownerId !== req.user!.sub && req.user!.role !== 'ADMIN') {
+      if (meeting.ownerId !== req.user!.sub) {
         res.status(403).json({ error: 'Forbidden', message: 'Not the meeting owner' });
         return;
       }
@@ -316,6 +324,11 @@ meetingsRouter.get(
   requireOrganizer,
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const meeting = await meetingService.getMeetingById(req.params.meetingId);
+      if (!meeting || meeting.ownerId !== req.user!.sub) {
+        res.status(403).json({ error: 'Forbidden' });
+        return;
+      }
       const list = await participantService.listParticipantsByMeeting(req.params.meetingId);
       res.json(list);
     } catch (e) {
@@ -336,7 +349,7 @@ meetingsRouter.post(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
-      if (meeting.ownerId !== req.user!.sub && req.user!.role !== 'ADMIN') {
+      if (meeting.ownerId !== req.user!.sub) {
         res.status(403).json({ error: 'Forbidden' });
         return;
       }
@@ -369,7 +382,7 @@ meetingsRouter.delete(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
-      if (meeting.ownerId !== req.user!.sub && req.user!.role !== 'ADMIN') {
+      if (meeting.ownerId !== req.user!.sub) {
         res.status(403).json({ error: 'Forbidden' });
         return;
       }

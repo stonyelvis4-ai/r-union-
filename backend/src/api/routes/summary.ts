@@ -7,7 +7,9 @@ import * as summaryService from '../../services/summary.js';
 import * as reportExport from '../../services/report-export.js';
 
 async function canAccessSharedSummary(meetingId: string, user: NonNullable<AuthRequest['user']>) {
-  if (user.role === 'ADMIN') return true;
+  const meeting = await meetingService.getMeetingById(meetingId);
+  if (!meeting) return false;
+  if (user.role === 'ADMIN') return meeting.ownerId === user.sub;
   const member = await meetingService.isParticipantOfMeeting(meetingId, user.email);
   if (!member) return false;
   const summary = await summaryService.getSummary(meetingId);
@@ -97,7 +99,7 @@ summaryRouter.post(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
-      if (meeting.ownerId !== req.user!.sub && req.user!.role !== 'ADMIN') {
+      if (meeting.ownerId !== req.user!.sub) {
         res.status(403).json({ error: 'Forbidden' });
         return;
       }
@@ -122,7 +124,8 @@ summaryRouter.patch(
   requireAuth,
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
-      if (req.user!.role !== 'ADMIN') {
+      const meeting = await meetingService.getMeetingById(req.params.id);
+      if (!meeting || meeting.ownerId !== req.user!.sub) {
         res.status(403).json({ error: 'Forbidden' });
         return;
       }
@@ -146,7 +149,7 @@ summaryRouter.post(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
-      if (meeting.ownerId !== req.user!.sub && req.user!.role !== 'ADMIN') {
+      if (meeting.ownerId !== req.user!.sub) {
         res.status(403).json({ error: 'Forbidden' });
         return;
       }

@@ -14,14 +14,15 @@ export interface CreateTrainingInput {
   presentationItems?: { title: string; description?: string; durationMinutes?: number; resourceUrl?: string }[];
 }
 
-export async function listTrainings() {
+export async function listTrainings(ownerId: string) {
   return prisma.training.findMany({
+    where: { ownerId },
     orderBy: [{ date: 'asc' }, { time: 'asc' }],
     include: { _count: { select: { registrations: true, presentationItems: true } } },
   });
 }
 
-export async function createTraining(input: CreateTrainingInput) {
+export async function createTraining(input: CreateTrainingInput & { ownerId: string }) {
   return prisma.training.create({
     data: {
       title: input.title,
@@ -32,6 +33,7 @@ export async function createTraining(input: CreateTrainingInput) {
       trainer: input.trainer || null,
       location: input.mode === 'PRESENTIAL' ? input.location || null : null,
       onlineUrl: input.mode === 'ONLINE' ? input.onlineUrl || null : null,
+      ownerId: input.ownerId,
       qrToken: randomBytes(24).toString('hex'),
       presentationItems: input.presentationItems?.length
         ? { create: input.presentationItems.map((item, position) => ({ ...item, position })) }
@@ -41,33 +43,39 @@ export async function createTraining(input: CreateTrainingInput) {
   });
 }
 
-export async function getTraining(id: string) {
+export async function getTraining(id: string, ownerId: string) {
   return prisma.training.findUnique({
     where: { id },
     include: {
       presentationItems: { orderBy: { position: 'asc' } },
       registrations: { orderBy: { createdAt: 'desc' } },
     },
-  });
+  }).then((training) => training?.ownerId === ownerId ? training : null);
 }
 
 export async function getPublicTraining(id: string, qrToken: string) {
   return prisma.training.findFirst({
     where: { id, qrToken, qrActive: true, status: 'PUBLISHED' },
-    select: { id: true, title: true, description: true, mode: true, date: true, time: true, trainer: true, location: true },
+    select: { id: true, title: true, description: true, mode: true, date: true, time: true, trainer: true, location: true, owner: { select: { adminSettings: { select: { qrEnabled: true, publicRegistrationEnabled: true, phoneRequired: true, signatureRequired: true } } } } },
   });
 }
 
-export async function setQrActive(id: string, qrActive: boolean) {
+export async function setQrActive(id: string, ownerId: string, qrActive: boolean) {
+  const training = await getTraining(id, ownerId);
+  if (!training) return null;
   return prisma.training.update({ where: { id }, data: { qrActive } });
 }
 
-export async function updateTrainingStatus(id: string, status: TrainingStatus) {
+export async function updateTrainingStatus(id: string, ownerId: string, status: TrainingStatus) {
+  const training = await getTraining(id, ownerId);
+  if (!training) return null;
   return prisma.training.update({ where: { id }, data: { status } });
 }
 
 /** Supprime une formation et ses listes associées (inscriptions et étapes). */
-export async function deleteTraining(id: string) {
+export async function deleteTraining(id: string, ownerId: string) {
+  const training = await getTraining(id, ownerId);
+  if (!training) return null;
   return prisma.training.delete({ where: { id } });
 }
 

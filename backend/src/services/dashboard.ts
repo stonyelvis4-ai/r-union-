@@ -2,7 +2,7 @@ import { prisma } from '../lib/prisma.js';
 
 const activeMeetingStatuses = ['DRAFT', 'SCHEDULED'] as const;
 
-export async function getAdminDashboard() {
+export async function getAdminDashboard(ownerId: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -17,15 +17,15 @@ export async function getAdminDashboard() {
     upcoming,
     recent,
   ] = await Promise.all([
-    prisma.meeting.count(),
-    prisma.meeting.count({ where: { date: { gte: today }, status: { in: [...activeMeetingStatuses] } } }),
-    prisma.meeting.count({ where: { status: 'COMPLETED' } }),
-    prisma.participant.count(),
-    prisma.attendance.count(),
-    prisma.summary.count({ where: { isSharedWithParticipants: true } }),
-    prisma.user.count({ where: { isActive: true } }),
+    prisma.meeting.count({ where: { ownerId } }),
+    prisma.meeting.count({ where: { ownerId, date: { gte: today }, status: { in: [...activeMeetingStatuses] } } }),
+    prisma.meeting.count({ where: { ownerId, status: 'COMPLETED' } }),
+    prisma.participant.count({ where: { meeting: { ownerId } } }),
+    prisma.attendance.count({ where: { meeting: { ownerId } } }),
+    prisma.summary.count({ where: { meeting: { ownerId }, isSharedWithParticipants: true } }),
+    prisma.user.count({ where: { isActive: true, managerId: ownerId } }),
     prisma.meeting.findMany({
-      where: { date: { gte: today }, status: { in: [...activeMeetingStatuses] } },
+      where: { ownerId, date: { gte: today }, status: { in: [...activeMeetingStatuses] } },
       orderBy: [{ date: 'asc' }, { time: 'asc' }],
       take: 4,
       select: {
@@ -39,7 +39,7 @@ export async function getAdminDashboard() {
       },
     }),
     prisma.meeting.findMany({
-      orderBy: { updatedAt: 'desc' },
+      where: { ownerId }, orderBy: { updatedAt: 'desc' },
       take: 5,
       select: {
         id: true,
@@ -55,7 +55,7 @@ export async function getAdminDashboard() {
   ]);
 
   const reportsToShare = await prisma.summary.count({
-    where: { isSharedWithParticipants: false },
+    where: { meeting: { ownerId }, isSharedWithParticipants: false },
   });
 
   return {

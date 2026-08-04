@@ -13,6 +13,7 @@ type PublicTraining = {
   time: string;
   trainer?: string | null;
   location?: string | null;
+  requirements: { phoneRequired: boolean; signatureRequired: boolean };
 };
 
 function SignaturePad({ onChange }: { onChange: (signature: string) => void }) {
@@ -99,7 +100,8 @@ export default function TrainingRegistrationPage() {
   }, [id, qrToken]);
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!signature) return setMessage('La signature est obligatoire.');
+    if (training?.requirements.signatureRequired && !signature)
+      return setMessage('La signature est obligatoire.');
     const form = new FormData(event.currentTarget);
     const payload = Object.fromEntries(form.entries());
     const response = await fetch(`${getApiBase()}/trainings/${id}/register`, {
@@ -186,7 +188,7 @@ export default function TrainingRegistrationPage() {
             <label>
               Numéro de téléphone *
               <input
-                required
+                required={training.requirements.phoneRequired}
                 type="tel"
                 name="phone"
                 className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-3"
@@ -226,7 +228,9 @@ export default function TrainingRegistrationPage() {
               </label>
             )}
             <div className="sm:col-span-2">
-              <p className="font-medium">Signature *</p>
+              <p className="font-medium">
+                Signature {training.requirements.signatureRequired ? '*' : '(facultative)'}
+              </p>
               <SignaturePad onChange={setSignature} />
             </div>
           </div>

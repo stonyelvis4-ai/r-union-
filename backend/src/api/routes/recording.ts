@@ -24,11 +24,11 @@ recordingRouter.post(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
-      if (meeting.ownerId !== req.user!.sub && req.user!.role !== 'ADMIN') {
+      if (meeting.ownerId !== req.user!.sub) {
         res.status(403).json({ error: 'Forbidden' });
         return;
       }
-      const result = await recordingService.startRecording(req.params.id, req.user!.sub, req.user!.role === 'ADMIN');
+      const result = await recordingService.startRecording(req.params.id, req.user!.sub);
       if (!result) {
         res.status(400).json({ error: 'Bad Request', message: 'Cannot start recording' });
         return;
@@ -47,6 +47,8 @@ recordingRouter.post(
   requireOrganizer,
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const meeting = await meetingService.getMeetingById(req.params.id);
+      if (!meeting || meeting.ownerId !== req.user!.sub) return res.status(403).json({ error: 'Forbidden' });
       recordingService.pauseRecording(req.params.id);
       res.json({ status: 'paused' });
     } catch (e) {
@@ -63,6 +65,8 @@ recordingRouter.post(
   upload.single('audio'),
   async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+      const meeting = await meetingService.getMeetingById(req.params.id);
+      if (!meeting || meeting.ownerId !== req.user!.sub) return res.status(403).json({ error: 'Forbidden' });
       const file = req.file;
       if (!file?.buffer) {
         res.status(400).json({ error: 'Bad Request', message: 'Audio file required' });
@@ -98,6 +102,7 @@ recordingRouter.get(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
+      if (meeting.ownerId !== req.user!.sub) return res.status(403).json({ error: 'Forbidden' });
       const recording = await recordingService.getRecording(req.params.id);
       if (!recording) {
         res.status(404).json({ error: 'Not Found', message: 'No recording' });
@@ -124,6 +129,7 @@ transcriptionRouter.get(
         res.status(404).json({ error: 'Not Found' });
         return;
       }
+      if (meeting.ownerId !== req.user!.sub) return res.status(403).json({ error: 'Forbidden' });
       const transcription = await transcriptionService.getTranscription(req.params.id);
       if (!transcription) {
         res.json({ status: 'pending', fullText: null });

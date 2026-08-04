@@ -5,7 +5,8 @@ import { authMiddleware } from '../middleware/auth.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { requireAdmin } from '../middleware/roles.js';
 import { prisma } from '../../lib/prisma.js';
-import { hashPassword, verifyPassword } from '../../services/auth.js';
+import { hashPassword, issueToken, verifyPassword } from '../../services/auth.js';
+import { getEnv } from '../../config/env.js';
 
 const settingsSchema = z.object({
   name: z.string().trim().min(1).max(200).optional(),
@@ -70,8 +71,10 @@ settingsRouter.post('/password', async (req: AuthRequest, res: Response, next: N
     if (!user || !(await verifyPassword(body.currentPassword, user.passwordHash))) {
       return res.status(400).json({ error: 'Bad Request', message: 'Mot de passe actuel incorrect' });
     }
-    await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(body.newPassword) } });
-    res.status(204).send();
+    const updated = await prisma.user.update({ where: { id: user.id }, data: { passwordHash: await hashPassword(body.newPassword), tokenVersion: { increment: 1 } } });
+    const secret = getEnv().JWT_SECRET;
+    if (!secret) return res.status(500).json({ error: 'Server misconfiguration' });
+    res.json({ token: issueToken({ sub: updated.id, email: updated.email, role: updated.role, version: updated.tokenVersion }, secret) });
   } catch (error) {
     if (error instanceof z.ZodError) return res.status(400).json({ error: 'Bad Request', errors: error.flatten() });
     next(error);

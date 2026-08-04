@@ -1,6 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth.js';
+import type { AuthRequest } from '../middleware/auth.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { requireAdmin } from '../middleware/roles.js';
 import * as trainingService from '../../services/training.js';
@@ -17,9 +18,9 @@ const trainingSchema = z.object({
 
 const registrationSchema = z.object({
   qrToken: z.string().min(20).max(200), firstName: z.string().min(1).max(100), lastName: z.string().min(1).max(100),
-  email: z.string().email().max(320), phone: z.string().min(5).max(50), cityCountry: z.string().max(200).optional(),
+  email: z.string().email().max(320), phone: z.string().min(5).max(50).optional(), cityCountry: z.string().max(200).optional(),
   organization: z.string().max(200).optional(), jobTitle: z.string().max(200).optional(), timezone: z.string().max(100).optional(),
-  signature: z.string().min(100).max(2_000_000),
+  signature: z.string().min(100).max(2_000_000).optional(),
 });
 
 export const trainingsRouter = Router();
@@ -28,15 +29,20 @@ trainingsRouter.get('/:id/public', async (req: { params: { id: string }; query: 
   try {
     const query = z.object({ qrToken: z.string().min(20).max(200) }).parse(req.query);
     const training = await trainingService.getPublicTraining(req.params.id, query.qrToken);
-    if (!training) return res.status(404).json({ error: 'Not Found', message: 'QR code invalid, expired or disabled' });
-    res.json(training);
+    if (!training || training.owner.adminSettings?.qrEnabled === false || training.owner.adminSettings?.publicRegistrationEnabled === false) return res.status(404).json({ error: 'Not Found', message: 'QR code invalid, expired or disabled' });
+    const { owner, ...publicTraining } = training;
+    res.json({ ...publicTraining, requirements: { phoneRequired: owner.adminSettings?.phoneRequired ?? false, signatureRequired: owner.adminSettings?.signatureRequired ?? true } });
   } catch (error) { next(error); }
 });
 
 trainingsRouter.post('/:id/register', async (req: { params: { id: string }; body: unknown }, res: Response, next: NextFunction) => {
   try {
     const body = registrationSchema.parse(req.body);
-    const result = await trainingService.registerForTraining({ trainingId: req.params.id, ...body });
+    const publicTraining = await trainingService.getPublicTraining(req.params.id, body.qrToken);
+    if (!publicTraining || publicTraining.owner.adminSettings?.qrEnabled === false || publicTraining.owner.adminSettings?.publicRegistrationEnabled === false) return res.status(404).json({ error: 'Not Found', message: 'QR code invalid, expired or disabled' });
+    if (publicTraining.owner.adminSettings?.phoneRequired && !body.phone) return res.status(400).json({ error: 'Bad Request', message: 'Phone required' });
+    if (publicTraining.owner.adminSettings?.signatureRequired !== false && !body.signature) return res.status(400).json({ error: 'Bad Request', message: 'Signature required' });
+    const result = await trainingService.registerForTraining({ trainingId: req.params.id, ...body, phone: body.phone || '', signature: body.signature || '' });
     if (!result.training || !result.registration) return res.status(404).json({ error: 'Not Found', message: 'QR code invalid, expired or disabled' });
     res.status(201).json({ id: result.registration.id, training: { title: result.training.title, mode: result.training.mode } });
   } catch (error) {
@@ -47,14 +53,16 @@ trainingsRouter.post('/:id/register', async (req: { params: { id: string }; body
 
 trainingsRouter.use(authMiddleware(), requireAuth, requireAdmin);
 
-trainingsRouter.get('/', async (_req, res: Response, next: NextFunction) => { try { res.json(await trainingService.listTrainings()); } catch (error) { next(error); } });
-trainingsRouter.post('/', async (req, res: Response, next: NextFunction) => { try { const body = trainingSchema.parse(req.body); res.status(201).json(await trainingService.createTraining(body)); } catch (error) { if (error instanceof z.ZodError) return res.status(400).json({ error: 'Bad Request', errors: error.flatten() }); next(error); } });
-trainingsRouter.get('/:id', async (req, res: Response, next: NextFunction) => { try { const training = await trainingService.getTraining(req.params.id); if (!training) return res.status(404).json({ error: 'Not Found' }); res.json(training); } catch (error) { next(error); } });
-trainingsRouter.patch('/:id/qr', async (req, res: Response, next: NextFunction) => { try { const body = z.object({ qrActive: z.boolean() }).parse(req.body); res.json(await trainingService.setQrActive(req.params.id, body.qrActive)); } catch (error) { next(error); } });
-trainingsRouter.patch('/:id/status', async (req, res: Response, next: NextFunction) => { try { const body = z.object({ status: z.enum(['DRAFT', 'PUBLISHED', 'COMPLETED', 'CANCELLED']) }).parse(req.body); res.json(await trainingService.updateTrainingStatus(req.params.id, body.status)); } catch (error) { next(error); } });
-trainingsRouter.delete('/:id', async (req, res: Response, next: NextFunction) => {
+trainingsRouter.get('/', async (req: AuthRequest, res: Response, next: NextFunction) => { try { if (!req.user) return; res.json(await trainingService.listTrainings(req.user.sub)); } catch (error) { next(error); } });
+trainingsRouter.post('/', async (req: AuthRequest, res: Response, next: NextFunction) => { try { if (!req.user) return; const body = trainingSchema.parse(req.body); res.status(201).json(await trainingService.createTraining({ ...body, ownerId: req.user.sub })); } catch (error) { if (error instanceof z.ZodError) return res.status(400).json({ error: 'Bad Request', errors: error.flatten() }); next(error); } });
+trainingsRouter.get('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => { try { if (!req.user) return; const training = await trainingService.getTraining(req.params.id, req.user.sub); if (!training) return res.status(404).json({ error: 'Not Found' }); res.json(training); } catch (error) { next(error); } });
+trainingsRouter.patch('/:id/qr', async (req: AuthRequest, res: Response, next: NextFunction) => { try { if (!req.user) return; const body = z.object({ qrActive: z.boolean() }).parse(req.body); const training = await trainingService.setQrActive(req.params.id, req.user.sub, body.qrActive); if (!training) return res.status(404).json({ error: 'Not Found' }); res.json(training); } catch (error) { next(error); } });
+trainingsRouter.patch('/:id/status', async (req: AuthRequest, res: Response, next: NextFunction) => { try { if (!req.user) return; const body = z.object({ status: z.enum(['DRAFT', 'PUBLISHED', 'COMPLETED', 'CANCELLED']) }).parse(req.body); const training = await trainingService.updateTrainingStatus(req.params.id, req.user.sub, body.status); if (!training) return res.status(404).json({ error: 'Not Found' }); res.json(training); } catch (error) { next(error); } });
+trainingsRouter.delete('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await trainingService.deleteTraining(req.params.id);
+    if (!req.user) return;
+    const training = await trainingService.deleteTraining(req.params.id, req.user.sub);
+    if (!training) return res.status(404).json({ error: 'Not Found' });
     res.status(204).send();
   } catch (error) {
     next(error);

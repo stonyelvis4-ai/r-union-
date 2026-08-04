@@ -15,16 +15,17 @@ export interface JwtPayload {
   sub: string;
   email: string;
   role: string;
+  version?: number;
   iat?: number;
   exp?: number;
 }
 
 export function issueToken(
-  payload: { sub: string; email: string; role: string },
+  payload: { sub: string; email: string; role: string; version?: number },
   secret: string
 ): string {
   return jwt.sign(
-    { sub: payload.sub, email: payload.email, role: payload.role },
+    { sub: payload.sub, email: payload.email, role: payload.role, version: payload.version ?? 0 },
     secret,
     { expiresIn: '7d' }
   );
